@@ -92,11 +92,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .expr-english{color:var(--green);font-size:13px;}
 .expr-note{grid-column:1/-1;font-size:11px;color:var(--text3);padding-top:6px;border-top:1px solid var(--border);margin-top:4px;}
 
-.drill-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px 24px;text-align:center;margin-bottom:16px;min-height:180px;display:flex;flex-direction:column;justify-content:center;}
-.drill-korean{font-family:var(--serif);font-size:20px;color:var(--text);margin-bottom:16px;line-height:1.4;}
-.drill-answer{font-size:15px;color:var(--green);margin-top:12px;display:none;line-height:1.6;}
-.drill-note{font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--mono);line-height:1.5;}
-.drill-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.drill-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.drill-prompt-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;}
+.drill-korean{font-family:var(--serif);font-size:22px;color:var(--text);margin-bottom:20px;line-height:1.4;}
+.drill-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--sans);font-size:15px;transition:border-color .15s;margin-bottom:12px;}
+.drill-input:focus{outline:none;border-color:var(--accent);}
+.drill-input.correct{border-color:var(--green);background:rgba(143,168,110,.08);}
+.drill-input.wrong{border-color:var(--red);background:rgba(201,106,90,.08);}
+.drill-feedback{font-size:13px;line-height:1.6;padding:12px 14px;border-radius:8px;margin-bottom:12px;display:none;}
+.drill-feedback.correct{background:rgba(143,168,110,.1);color:var(--green);border:1px solid rgba(143,168,110,.3);}
+.drill-feedback.wrong{background:rgba(201,106,90,.1);color:var(--red);border:1px solid rgba(201,106,90,.3);}
+.drill-model{font-size:13px;color:var(--green);margin-top:8px;display:none;line-height:1.6;}
+.drill-note{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono);line-height:1.5;display:none;}
+.drill-controls{display:flex;gap:10px;flex-wrap:wrap;}
 .drill-progress{font-size:11px;font-family:var(--mono);color:var(--text3);text-align:center;margin-bottom:16px;}
 
 /* Daily sentence */
@@ -347,27 +355,43 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="page" id="page-drill">
   <div class="page-header">
     <div class="page-title">드릴 연습</div>
-    <div class="page-subtitle">내 실제 오류 패턴으로 만든 변환 연습</div>
+    <div class="page-subtitle">직접 영어로 입력하고 Claude가 채점</div>
   </div>
+
   <div class="drill-progress" id="drill-progress">1 / 15</div>
-  <div class="drill-card">
-    <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px">이 표현을 자연스러운 영어로 바꾸면?</div>
+
+  <div class="drill-card" id="drill-card">
+    <div class="drill-prompt-label">이 표현을 자연스러운 영어로 써보세요</div>
     <div class="drill-korean" id="drill-korean">로딩 중...</div>
-    <div class="drill-answer" id="drill-answer"></div>
+    <input class="drill-input" id="drill-input" type="text" placeholder="영어로 입력..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="drill-feedback" id="drill-feedback"></div>
+    <div class="drill-model" id="drill-model"></div>
     <div class="drill-note" id="drill-note"></div>
   </div>
+
   <div class="drill-controls">
-    <button class="btn" onclick="showAnswer()">정답 보기</button>
-    <button class="btn" onclick="nextDrill(true)" style="color:var(--green);border-color:rgba(143,168,110,.4)">✓ 알았다</button>
-    <button class="btn" onclick="nextDrill(false)" style="color:var(--red);border-color:rgba(201,106,90,.4)">✗ 다시</button>
+    <button class="btn btn-primary" id="drill-submit-btn" onclick="submitDrill()">제출</button>
+    <button class="btn" id="drill-next-btn" onclick="nextDrill()" style="display:none">다음 →</button>
+    <button class="btn" id="drill-skip-btn" onclick="skipDrill()" style="color:var(--text3)">건너뛰기</button>
   </div>
+
   <div class="card" style="margin-top:20px">
     <div class="card-title">세션 현황</div>
-    <div style="display:flex;gap:24px;font-size:13px">
+    <div style="display:flex;gap:24px;font-size:13px;margin-bottom:12px">
       <span style="color:var(--green)">✓ 맞음: <strong id="drill-correct">0</strong></span>
       <span style="color:var(--red)">✗ 틀림: <strong id="drill-wrong">0</strong></span>
       <span style="color:var(--text3)">남음: <strong id="drill-remaining">15</strong></span>
     </div>
+    <div id="drill-wrongs-preview" style="display:none">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">이번 세션 오답</div>
+      <div id="drill-wrongs-list"></div>
+    </div>
+  </div>
+
+  <div class="card" id="drill-wrong-bank" style="display:none">
+    <div class="card-title">📚 누적 오답 — 다음 수업 인풋</div>
+    <div id="drill-wrong-bank-list"></div>
+    <button class="btn" id="clear-wrongs-btn" onclick="clearWrongBank()" style="margin-top:12px;color:var(--red);border-color:rgba(201,106,90,.3);font-size:12px">오답 초기화</button>
   </div>
 </div>
 
@@ -684,19 +708,174 @@ function updateStreak(){
   document.getElementById('streak-val').textContent=streak;
 }
 
-// Upload
+// Upload — dual PDF (feedback + script)
+const dualFiles = { feedback: null, script: null };
+
 function dragOver(e){e.preventDefault();e.currentTarget.classList.add('dragover');}
 function dragLeave(e){e.currentTarget.classList.remove('dragover');}
-function dropFile(e){
+
+function dropDual(e, type){
   e.preventDefault();e.currentTarget.classList.remove('dragover');
   const f=e.dataTransfer.files[0];
-  if(f?.type==='application/pdf')handleFile(f);else toast('PDF 파일만 가능합니다.');
+  if(f?.type==='application/pdf') loadDualFile(f, type);
+  else toast('PDF 파일만 가능합니다.');
 }
-function handleFile(file){
-  if(!file)return;if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
-  const reader=new FileReader();
-  reader.onload=async e=>{await analyzeWithClaude(e.target.result.split(',')[1],file.name);};
-  reader.readAsDataURL(file);
+
+function loadDualFile(file, type){
+  if(!file) return;
+  dualFiles[type] = file;
+
+  // UI 업데이트
+  const icon = document.getElementById('icon-'+type);
+  const text = document.getElementById('text-'+type);
+  const hint = document.getElementById('hint-'+type);
+  const zone = document.getElementById('zone-'+type);
+  icon.textContent = '✅';
+  text.textContent = file.name.slice(0, 30) + (file.name.length > 30 ? '...' : '');
+  hint.textContent = (Math.round(file.size/1024)) + 'KB';
+  zone.style.borderColor = 'var(--green)';
+
+  // 피드백 PDF라도 있으면 버튼 활성화
+  const btn = document.getElementById('analyze-dual-btn');
+  if(dualFiles.feedback) {
+    btn.disabled = false;
+    if(dualFiles.script) btn.textContent = '두 PDF 합쳐서 분석하기';
+    else btn.textContent = '피드백 PDF만 분석하기';
+  }
+}
+
+async function analyzeDualPDF(){
+  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
+  if(!dualFiles.feedback){toast('튜터 피드백 PDF를 먼저 올려주세요.');return;}
+  showLoading(true);showResult(false);
+
+  // 두 파일을 base64로 변환
+  function toBase64(file){
+    return new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=e=>res(e.target.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  try{
+    const feedbackB64 = await toBase64(dualFiles.feedback);
+    const scriptB64 = dualFiles.script ? await toBase64(dualFiles.script) : null;
+
+    const knownErrors = `This learner's known recurring errors:
+1) Article/plural: "the pros is", "every items", "very many knowledge"
+2) Korean direct translation: "starting point making me interested", "I have passion to", "what makes me hard is", "it is very burdening", "happened to get into"
+3) Connector overuse: repeating "so" instead of while/whereas/that said
+4) Verb nuance: "deal with" (negative connotation when not intended), "composed of" (overused)`;
+
+    // content 배열 구성 — 피드백 PDF는 항상, 스크립트 PDF는 있을 때만
+    const contentArr = [
+      {type:'document', source:{type:'base64', media_type:'application/pdf', data:feedbackB64}},
+    ];
+    if(scriptB64){
+      contentArr.push({type:'document', source:{type:'base64', media_type:'application/pdf', data:scriptB64}});
+    }
+
+    const promptText = scriptB64
+      ? `You are analyzing TWO PDFs from a Ringle English tutoring session for a Korean business consultant.
+Document 1: Tutor's feedback/editing document (corrections the tutor made)
+Document 2: Lesson transcript (full conversation script)
+
+${knownErrors}
+
+Analyze BOTH documents together and return:
+- Errors the tutor corrected (from doc 1)
+- Errors the tutor MISSED that appear in doc 2
+- Known recurring patterns that still appear
+- Any improvements vs typical patterns
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
+  "tutor_missed_errors": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": ["개선된 점"],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`
+      : `You are analyzing a Ringle tutoring feedback PDF for a Korean business consultant.
+
+${knownErrors}
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
+  "tutor_missed_errors": [],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": [],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`;
+
+    contentArr.push({type:'text', text:promptText});
+
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:contentArr}]})
+    });
+    const data = await r.json();
+    const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    renderDualResult(parsed, !!scriptB64);
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:dualFiles.feedback.name, source:'dual-pdf'});
+    saveState();
+  }catch(e){toast('분석 실패: '+e.message); console.error(e);}
+  finally{showLoading(false);}
+}
+
+function renderDualResult(p, hasScript){
+  document.getElementById('result-title').textContent = (p.session_topic||'수업 분석') + (hasScript ? ' — 피드백 + 스크립트' : ' — 피드백');
+  let html='';
+
+  // 튜터가 교정한 것
+  if(p.tutor_corrections?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">📝 튜터 교정 (${p.tutor_corrections.length}건)</div>`;
+    p.tutor_corrections.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)');});
+    html+='</div>';
+  }
+
+  // 튜터가 놓친 것 (스크립트 있을 때만)
+  if(p.tutor_missed_errors?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">⚠ 튜터가 놓친 오류 (${p.tutor_missed_errors.length}건)</div>`;
+    p.tutor_missed_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+
+  // 반복 패턴
+  if(p.recurring_errors_found?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">🔁 이전 수업과 같은 오류 (${p.recurring_errors_found.length}건)</div>`;
+    p.recurring_errors_found.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+
+  // 새 표현
+  if(p.new_expressions?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">✨ 새로운 표현</div>`;
+    p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
+    html+='</div>';
+  }
+
+  // 개선된 점
+  if(p.improvements_noted?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--green)">👍 개선된 점</div>${p.improvements_noted.map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`).join('')}</div>`;
+  }
+
+  // 다음 수업 과제
+  if(p.briefing_for_next){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 최우선 과제</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  }
+
+  document.getElementById('result-content').innerHTML=html;
+  showResult(true);
+  toast('분석 완료! 🎉');
 }
 
 // Script analysis — finds tutor-missed errors
@@ -810,29 +989,193 @@ function showLoading(v){document.getElementById('analyze-loading').style.display
 function showResult(v){document.getElementById('analysis-result').classList.toggle('visible',v);}
 
 // Drill
-function shuffleDrill(){drillQueue=[...DRILLS].sort(()=>Math.random()-.5);drillIndex=0;drillCorrect=0;drillWrong=0;}
+// ── Drill — 주관식 입력 + Claude 채점 ──────────────────────
+let drillWrongBank = []; // 누적 오답
+let drillChecking = false;
+let drillAnswered = false;
+
+function shuffleDrill(){
+  drillQueue=[...DRILLS].sort(()=>Math.random()-.5);
+  drillIndex=0;drillCorrect=0;drillWrong=0;drillAnswered=false;
+  // 저장된 오답 불러오기
+  try{ drillWrongBank=JSON.parse(localStorage.getItem('drill_wrongs')||'[]'); }catch(e){}
+  renderWrongBank();
+}
+
 function loadDrill(){
   if(drillIndex>=drillQueue.length){
-    document.getElementById('drill-korean').textContent=`세션 완료! ✓${drillCorrect} ✗${drillWrong}`;
-    document.getElementById('drill-answer').style.display='none';
-    document.getElementById('drill-note').textContent='다시 하려면 새로고침하세요.';
+    // 세션 완료
+    document.getElementById('drill-korean').textContent='세션 완료! 🎉';
+    document.getElementById('drill-input').style.display='none';
+    document.getElementById('drill-submit-btn').style.display='none';
+    document.getElementById('drill-skip-btn').style.display='none';
+    document.getElementById('drill-next-btn').style.display='none';
+    document.getElementById('drill-feedback').className='drill-feedback correct';
+    document.getElementById('drill-feedback').textContent=`✓ ${drillCorrect}개 맞음  ✗ ${drillWrong}개 틀림`;
+    document.getElementById('drill-feedback').style.display='block';
+    document.getElementById('drill-progress').textContent='세션 완료';
     return;
   }
   const item=drillQueue[drillIndex];
   document.getElementById('drill-korean').textContent=item.korean;
-  document.getElementById('drill-answer').textContent='→ '+item.english;
-  document.getElementById('drill-answer').style.display='none';
-  document.getElementById('drill-note').textContent='';
+  document.getElementById('drill-input').value='';
+  document.getElementById('drill-input').className='drill-input';
+  document.getElementById('drill-input').style.display='block';
+  document.getElementById('drill-feedback').style.display='none';
+  document.getElementById('drill-model').style.display='none';
+  document.getElementById('drill-note').style.display='none';
+  document.getElementById('drill-submit-btn').style.display='inline-flex';
+  document.getElementById('drill-submit-btn').disabled=false;
+  document.getElementById('drill-submit-btn').textContent='제출';
+  document.getElementById('drill-next-btn').style.display='none';
+  document.getElementById('drill-skip-btn').style.display='inline-flex';
   document.getElementById('drill-progress').textContent=`${drillIndex+1} / ${drillQueue.length}`;
   document.getElementById('drill-remaining').textContent=drillQueue.length-drillIndex;
-  answerShown=false;
+  drillAnswered=false;
+  // Enter 키로 제출
+  const input=document.getElementById('drill-input');
+  input.onkeydown=e=>{ if(e.key==='Enter'&&!drillAnswered) submitDrill(); };
+  setTimeout(()=>input.focus(), 100);
 }
-function showAnswer(){document.getElementById('drill-answer').style.display='block';document.getElementById('drill-note').textContent=drillQueue[drillIndex].note;answerShown=true;}
-function nextDrill(correct){
-  if(!answerShown){showAnswer();return;}
-  if(correct){drillCorrect++;document.getElementById('drill-correct').textContent=drillCorrect;}
-  else{drillWrong++;document.getElementById('drill-wrong').textContent=drillWrong;}
-  drillIndex++;loadDrill();
+
+async function submitDrill(){
+  if(drillAnswered) return;
+  const userAnswer = document.getElementById('drill-input').value.trim();
+  if(!userAnswer){ toast('영어로 입력해주세요.'); return; }
+
+  drillAnswered=true;
+  const item=drillQueue[drillIndex];
+  const submitBtn=document.getElementById('drill-submit-btn');
+  submitBtn.disabled=true;
+  submitBtn.textContent='채점 중...';
+
+  // API 있으면 Claude 채점, 없으면 간단 키워드 매칭
+  let isCorrect=false, feedbackText='', modelAnswer=item.english;
+
+  if(apiKey){
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:
+          `Grade this English answer for a Korean learner.
+Korean prompt: "${item.korean}"
+Model answer(s): "${item.english}"
+Learner's answer: "${userAnswer}"
+
+Is the answer correct or acceptable? Consider meaning and naturalness, not exact wording.
+Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장 피드백. 맞으면 칭찬+뉘앙스 팁, 틀리면 어디가 어색한지"}`
+        }]})
+      });
+      const data=await r.json();
+      const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+      isCorrect=parsed.correct;
+      feedbackText=parsed.feedback_ko;
+    }catch(e){
+      // fallback: 키워드 매칭
+      const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+      const userLower=userAnswer.toLowerCase();
+      isCorrect=keywords.some(k=>userLower.includes(k));
+      feedbackText=isCorrect?'잘했어요!':'다시 한 번 확인해보세요.';
+    }
+  } else {
+    // API 없을 때 키워드 매칭
+    const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+    const userLower=userAnswer.toLowerCase();
+    isCorrect=keywords.filter(k=>userLower.includes(k)).length>=2;
+    feedbackText=isCorrect?'정답이에요! (API 연결 시 더 정밀한 채점 가능)':'아쉬워요. 모범 답안을 확인해보세요. (API 연결 시 자세한 피드백 가능)';
+  }
+
+  // 결과 표시
+  const input=document.getElementById('drill-input');
+  const feedback=document.getElementById('drill-feedback');
+  const model=document.getElementById('drill-model');
+  const note=document.getElementById('drill-note');
+
+  input.className='drill-input '+(isCorrect?'correct':'wrong');
+  feedback.className='drill-feedback '+(isCorrect?'correct':'wrong');
+  feedback.textContent=(isCorrect?'✓ ':'✗ ')+feedbackText;
+  feedback.style.display='block';
+  model.textContent='모범 답안: '+modelAnswer;
+  model.style.display='block';
+  note.textContent=item.note;
+  note.style.display='block';
+
+  // 점수 업데이트
+  if(isCorrect){
+    drillCorrect++;
+    document.getElementById('drill-correct').textContent=drillCorrect;
+  } else {
+    drillWrong++;
+    document.getElementById('drill-wrong').textContent=drillWrong;
+    // 오답 누적 저장
+    addToWrongBank(item, userAnswer);
+  }
+
+  submitBtn.style.display='none';
+  document.getElementById('drill-next-btn').style.display='inline-flex';
+}
+
+function nextDrill(){
+  drillIndex++;
+  loadDrill();
+}
+
+function skipDrill(){
+  drillIndex++;
+  loadDrill();
+}
+
+function addToWrongBank(item, userAnswer){
+  const entry={
+    date: new Date().toISOString().slice(0,10),
+    korean: item.korean,
+    modelEnglish: item.english,
+    userAnswer: userAnswer,
+    note: item.note,
+  };
+  drillWrongBank.unshift(entry);
+  if(drillWrongBank.length>30) drillWrongBank=drillWrongBank.slice(0,30);
+  localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
+  renderWrongBank();
+}
+
+function renderWrongBank(){
+  const bank=document.getElementById('drill-wrong-bank');
+  const list=document.getElementById('drill-wrong-bank-list');
+  const preview=document.getElementById('drill-wrongs-preview');
+  const previewList=document.getElementById('drill-wrongs-list');
+
+  if(!drillWrongBank.length){ bank.style.display='none'; preview.style.display='none'; return; }
+
+  bank.style.display='block';
+  list.innerHTML=drillWrongBank.slice(0,8).map(e=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
+      <div style="font-size:13px;color:var(--red);margin-bottom:3px">${e.korean}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:2px">내 답: <span style="font-family:var(--mono)">${e.userAnswer}</span></div>
+      <div style="font-size:12px;color:var(--green)">정답: <span style="font-family:var(--mono)">${e.modelEnglish}</span></div>
+    </div>`).join('')+(drillWrongBank.length>8?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${drillWrongBank.length-8}개 더</div>`:'');
+
+  // 세션 내 오답 미리보기
+  const sessionWrongs=drillWrongBank.filter(e=>e.date===new Date().toISOString().slice(0,10));
+  if(sessionWrongs.length>0){
+    preview.style.display='block';
+    previewList.innerHTML=sessionWrongs.slice(0,3).map(e=>`
+      <div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2)">${e.korean}</span>
+        <span style="color:var(--text3);margin:0 6px">→</span>
+        <span style="color:var(--green);font-family:var(--mono)">${e.modelEnglish.split('/')[0].trim()}</span>
+      </div>`).join('');
+  }
+}
+
+function clearWrongBank(){
+  if(!confirm('누적 오답을 초기화할까요?')) return;
+  drillWrongBank=[];
+  localStorage.removeItem('drill_wrongs');
+  renderWrongBank();
+  toast('오답 초기화됐어요.');
 }
 
 function saveState(){
@@ -855,6 +1198,48 @@ function toast(msg){
 }
 
 init();
+
+// ── 확장에서 넘어온 수업 데이터 자동 처리 ─────────────────
+(function handleExtensionPayload() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('lesson');
+  if (!raw) return;
+
+  try {
+    const data = JSON.parse(decodeURIComponent(raw));
+    if (data.source !== 'extension') return;
+
+    // URL 파라미터 제거 (히스토리 정리)
+    window.history.replaceState({}, '', window.location.pathname);
+
+    // 자동으로 수업 분석 탭으로 이동
+    setTimeout(() => {
+      // 탭 전환
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item,.bnav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-upload').classList.add('active');
+
+      // 스크립트가 있으면 스크립트 탭으로
+      if (data.scriptText && data.scriptText.length > 200) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('tab-script').classList.add('active');
+        document.getElementById('script-input').value = data.scriptText;
+        toast('📝 스크립트가 자동으로 입력됐어요! 분석 버튼을 눌러주세요.');
+      } else if (data.pdfLinks && data.pdfLinks.length > 0) {
+        // PDF 링크가 있으면 알려주기
+        toast(`📄 PDF 링크 ${data.pdfLinks.length}개 감지. 아래에서 PDF를 업로드해주세요.`);
+      }
+
+      // 날짜 정보 저장
+      console.log('[Tracker] Extension payload received:', data.date, data.pageTitle);
+    }, 300);
+
+  } catch (e) {
+    console.error('[Tracker] Failed to parse extension payload:', e);
+  }
+})();
 </script>
 </body>
 </html>
