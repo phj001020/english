@@ -839,7 +839,12 @@ Return JSON only:
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:contentArr}]})
     });
     const data = await r.json();
-    const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    let rawText = data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd = rawText.lastIndexOf('}');
+    if(jsonStart === -1 || jsonEnd === -1) throw new Error('JSON 없음');
+    rawText = rawText.slice(jsonStart, jsonEnd+1);
+    const parsed = JSON.parse(rawText);
     renderDualResult(parsed, !!scriptB64);
     sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:dualFiles.feedback.name, source:'dual-pdf'});
     saveState();
