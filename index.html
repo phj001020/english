@@ -746,10 +746,10 @@ function loadDualFile(file, type){
   const text = document.getElementById('text-'+type);
   const hint = document.getElementById('hint-'+type);
   const zone = document.getElementById('zone-'+type);
-  icon.textContent = '✅';
-  text.textContent = file.name.slice(0, 30) + (file.name.length > 30 ? '...' : '');
-  hint.textContent = (Math.round(file.size/1024)) + 'KB';
-  zone.style.borderColor = 'var(--green)';
+  if(icon) icon.textContent = '✅';
+  if(text) text.textContent = file.name.slice(0, 30) + (file.name.length > 30 ? '...' : '');
+  if(hint) hint.textContent = (Math.round(file.size/1024)) + 'KB';
+  if(zone) zone.style.borderColor = 'var(--green)';
 
   // 피드백 PDF라도 있으면 버튼 활성화
   const btn = document.getElementById('analyze-dual-btn');
