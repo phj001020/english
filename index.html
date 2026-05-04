@@ -514,7 +514,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="settings-section">
     <div class="settings-title">앱 정보</div>
     <div style="font-size:12px;color:var(--text3);line-height:1.8;font-family:var(--mono)">
-      버전: 1.1.0<br>모델: claude-sonnet-4-6<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
+      버전: 1.1.0<br>모델: claude-sonnet-4-6-20250217<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
     </div>
   </div>
 </div>
@@ -626,7 +626,7 @@ async function testApiKey(){
   if(!key){toast('API 키를 먼저 입력해주세요.');return;}
   const st=document.getElementById('key-status');st.textContent='테스트 중...';st.style.color='var(--text3)';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
     if(r.ok){st.textContent='✓ 연결 성공';st.style.color='var(--green)';apiKey=key;updateApiStatus(true);}
     else{st.textContent='✗ 키 오류';st.style.color='var(--red)';}
   }catch(e){st.textContent='✗ 네트워크 오류';st.style.color='var(--red)';}
@@ -664,7 +664,7 @@ async function generateDailySentence(){
   if(!apiKey){pickDailySentence();toast('풀에서 새 문장을 뽑았어요!');return;}
   const btn=document.getElementById('gen-btn');btn.disabled=true;btn.textContent='생성 중...';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
     const data=await r.json();
     const s=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
     localStorage.setItem(DAILY_KEY,JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:s}));
@@ -682,7 +682,7 @@ async function checkDiary(){
   const saved=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
   const target=saved.sentence?.english||'';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
     const data=await r.json();
     const fb=document.getElementById('diary-feedback');
     fb.textContent=data.content.map(i=>i.text||'').join('');fb.style.display='block';
@@ -836,7 +836,7 @@ Return JSON only:
     const r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:contentArr}]})
+      body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:2000,messages:[{role:'user',content:contentArr}]})
     });
     const data = await r.json();
     const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
@@ -901,7 +901,7 @@ async function analyzeMemo(){
   if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
   showLoading(true);showResult(false);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","key_errors":[{"original":"phrase","corrected":"better","explanation_ko":"설명"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","key_errors":[{"original":"phrase","corrected":"better","explanation_ko":"설명"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
     const data=await r.json();
     const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
     renderPDFResult(parsed);
@@ -915,7 +915,7 @@ async function analyzeMemo(){
 async function analyzeWithClaude(base64Data,filename){
   showLoading(true);showResult(false);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64Data}},{type:'text',text:'Analyze this Ringle tutoring PDF. Return JSON: {"session_topic":"주제 한국어","key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[{"expression":"expr","meaning_ko":"뜻","example":"ex"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"} Return ONLY valid JSON.'}]}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:1500,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64Data}},{type:'text',text:'Analyze this Ringle tutoring PDF. Return JSON: {"session_topic":"주제 한국어","key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[{"expression":"expr","meaning_ko":"뜻","example":"ex"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"} Return ONLY valid JSON.'}]}]})});
     const data=await r.json();
     const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
     renderPDFResult(parsed);
@@ -1020,7 +1020,7 @@ async function submitDrill(){
       const r=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:
+        body:JSON.stringify({model:'claude-sonnet-4-6-20250217',max_tokens:200,messages:[{role:'user',content:
           `Grade this English answer for a Korean learner.
 Korean prompt: "${item.korean}"
 Model answer(s): "${item.english}"
