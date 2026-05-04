@@ -419,7 +419,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
       <div class="upload-icon">📄</div>
       <div class="upload-text">PDF 파일을 여기에 드래그하거나 클릭해서 선택</div>
       <div class="upload-hint">Ringle 수업 결과 PDF</div>
-      <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="handleFile(this.files[0])">
+      <input type="file" id="file-input" accept=".pdf" style="display:none" onchange="loadDualFile(this.files[0],'feedback')">
     </div>
   </div>
 
@@ -873,61 +873,6 @@ function renderDualResult(p, hasScript){
   toast('분석 완료! 🎉');
 }
 
-// Script analysis — finds tutor-missed errors
-async function analyzeScript(){
-  const script=document.getElementById('script-input').value.trim();
-  if(!script){toast('스크립트를 붙여넣어 주세요.');return;}
-  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
-  showLoading(true);showResult(false);
-  const knownErrors=`Known recurring errors: 1) Article/plural: "the pros is", "every items", "very many knowledge" 2) Korean-style: "starting point making me interested", "I have passion to", "what makes me hard is", "it is very burdening", "happened to get into" 3) Connector: overusing "so" 4) Verb: "deal with" negative connotation, "composed of" overuse`;
-  const prompt=`You are analyzing a Korean business consultant's Ringle class transcript. The tutor may have missed errors.
-
-${knownErrors}
-
-Find in this transcript:
-1. Grammar/naturalness errors the tutor MISSED
-2. Instances of her known recurring errors still appearing
-3. Any improvements vs her typical patterns
-
-Transcript (first 3000 chars analyzed):
-"""${script.slice(0,3000)}"""
-
-Return JSON only:
-{"session_topic":"주제 한국어","tutor_missed_errors":[{"original":"phrase","corrected":"better","explanation_ko":"설명"}],"recurring_errors_found":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb","explanation_ko":"설명"}],"improvements_noted":["개선점"],"priority_for_next":"다음 수업 최우선 과제 한 가지"}`;
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-    const data=await r.json();
-    const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-    renderScriptResult(parsed);
-    sessions.unshift({...parsed,date:new Date().toISOString().slice(0,10),filename:'script',source:'script'});
-    saveState();
-  }catch(e){toast('분석 실패: '+e.message);}
-  finally{showLoading(false);}
-}
-
-function renderScriptResult(p){
-  document.getElementById('result-title').textContent=(p.session_topic||'스크립트')+'— 심층 분석';
-  let html='';
-  if(p.tutor_missed_errors?.length){
-    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">⚠ 튜터가 놓친 오류 (${p.tutor_missed_errors.length}건)</div>`;
-    p.tutor_missed_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
-    html+='</div>';
-  }
-  if(p.recurring_errors_found?.length){
-    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--amber)">🔁 이전 수업과 같은 오류 (${p.recurring_errors_found.length}건)</div>`;
-    p.recurring_errors_found.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)');});
-    html+='</div>';
-  }
-  if(p.improvements_noted?.length){
-    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--green)">✨ 개선된 점</div>${p.improvements_noted.map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`).join('')}</div>`;
-  }
-  if(p.priority_for_next){
-    html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 최우선 과제</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.priority_for_next}</div></div>`;
-  }
-  document.getElementById('result-content').innerHTML=html;
-  showResult(true);toast('스크립트 분석 완료!');
-}
-
 async function analyzeMemo(){
   const memo=document.getElementById('memo-input').value.trim();
   if(!memo){toast('내용을 입력해주세요.');return;}
@@ -1310,10 +1255,7 @@ function restoreRecentLesson(){
       if (data.scriptText && data.scriptText.length > 200) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-        document.getElementById('tab-script').classList.add('active');
-        document.getElementById('script-input').value = data.scriptText;
-        toast('📝 스크립트가 자동으로 입력됐어요! 분석 버튼을 눌러주세요.');
+        toast('📝 스크립트 데이터가 감지됐어요. PDF 탭에서 PDF를 올려주세요.');
       } else if (data.pdfLinks && data.pdfLinks.length > 0) {
         // PDF 링크가 있으면 알려주기
         toast(`📄 PDF 링크 ${data.pdfLinks.length}개 감지. 아래에서 PDF를 업로드해주세요.`);
