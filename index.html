@@ -621,7 +621,7 @@ function classifyErrors(errors){
 }
 
 // ── 대시보드 업데이트 ─────────────────────────────────
-function updateDashboard(parsed){
+function updateDashboard(parsed, isRestore=false){
   const allErrors = [
     ...(parsed.tutor_corrections||[]),
     ...(parsed.tutor_missed_errors||[]),
@@ -700,8 +700,8 @@ function updateDashboard(parsed){
     latestContent.innerHTML = html;
   }
 
-  // 6. 수업 기록(history) 탭 업데이트
-  updateHistoryList(parsed);
+  // 6. 수업 기록(history) 탭 업데이트 — 새 분석 때만
+  if(!isRestore) updateHistoryList(parsed);
 
   // 7. 설정 페이지 총 수업 수
   document.getElementById('total-sessions').textContent = totalCount;
@@ -1365,7 +1365,7 @@ function restoreRecentLesson(){
   const daysDiff=(new Date()-new Date(latest.date))/(1000*60*60*24);
   if(daysDiff>7) return;
   syncAnalysisToLearning(latest);
-  updateDashboard(latest);
+  updateDashboard(latest, true); // isRestore=true → 수업 기록 중복 추가 안 함
 }
 
 // ── 확장에서 넘어온 수업 데이터 처리 ─────────────────
