@@ -107,7 +107,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .drill-controls{display:flex;gap:10px;flex-wrap:wrap;}
 .drill-progress{font-size:11px;font-family:var(--mono);color:var(--text3);text-align:center;margin-bottom:16px;}
 
-/* Daily sentence */
 .sentence-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:16px;position:relative;overflow:hidden;}
 .sentence-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--teal));}
 .sentence-date{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;}
@@ -119,7 +118,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .diary-area:focus{outline:none;border-color:var(--accent);}
 .diary-feedback{font-size:13px;color:var(--green);margin-top:10px;display:none;line-height:1.6;padding:12px;background:rgba(143,168,110,.08);border-radius:8px;border-left:3px solid var(--green);}
 
-/* Upload tabs */
 .tab-row{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .tab-btn{flex:1;padding:10px 8px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--sans);}
 .tab-btn:last-child{border-right:none;}
@@ -223,18 +221,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="page active" id="page-dashboard">
   <div class="page-header">
     <div class="page-title">나의 영어 성장</div>
-    <div class="page-subtitle">29회 수업 분석 기반 · 2024.12 – 2026.04</div>
+    <div class="page-subtitle" id="dashboard-subtitle">29회 수업 분석 기반 · 2024.12 – 2026.04</div>
   </div>
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">총 수업</div><div class="stat-value">29</div><div class="stat-sub">17개월간</div></div>
-    <div class="stat-card"><div class="stat-label">정체 오류</div><div class="stat-value" style="color:var(--red)">3</div><div class="stat-sub">관사·직역·연결어</div></div>
-    <div class="stat-card"><div class="stat-label">개선 영역</div><div class="stat-value" style="color:var(--green)">2</div><div class="stat-sub">어휘·논리구조</div></div>
-    <div class="stat-card"><div class="stat-label">일기 연속</div><div class="stat-value" id="streak-val" style="color:var(--accent)">0</div><div class="stat-sub">일 연속</div></div>
+    <div class="stat-card">
+      <div class="stat-label">총 수업</div>
+      <div class="stat-value" id="stat-total">29</div>
+      <div class="stat-sub" id="stat-total-sub">17개월간</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">정체 오류</div>
+      <div class="stat-value" id="stat-stagnant" style="color:var(--red)">3</div>
+      <div class="stat-sub" id="stat-stagnant-sub">관사·직역·연결어</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">개선 영역</div>
+      <div class="stat-value" id="stat-improving" style="color:var(--green)">2</div>
+      <div class="stat-sub" id="stat-improving-sub">어휘·논리구조</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">일기 연속</div>
+      <div class="stat-value" id="streak-val" style="color:var(--accent)">0</div>
+      <div class="stat-sub">일 연속</div>
+    </div>
   </div>
   <div class="two-col">
     <div class="card">
       <div class="card-title">반복 오류 Top 5</div>
-      <div class="error-list">
+      <div class="error-list" id="dashboard-error-list">
         <div><div class="error-header"><span class="error-name">관사 / 단수복수</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">매 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:92%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
         <div><div class="error-header"><span class="error-name">한국식 직역</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">핵심 병목</span></div><div class="bar-bg"><div class="bar-fill" style="width:80%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
         <div><div class="error-header"><span class="error-name">연결어 부족</span><span style="font-size:11px;font-family:var(--mono);color:var(--amber)">so···so</span></div><div class="bar-bg"><div class="bar-fill" style="width:72%;background:var(--amber)"></div></div><div class="error-trend">↑ 소폭 개선</div></div>
@@ -244,9 +258,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     </div>
     <div class="card">
       <div class="card-title">오늘 의식할 것</div>
-      <div class="briefing-item" style="border-color:rgba(201,106,90,.3)"><span class="briefing-tag tag-red">관사</span><div class="briefing-text">"The pros <strong>are</strong>" — 복수 주어엔 복수 동사</div></div>
-      <div class="briefing-item" style="border-color:rgba(200,137,90,.3)"><span class="briefing-tag tag-amber">연결어</span><div class="briefing-text">so 연발 → <strong>while / that said / on top of that</strong></div></div>
-      <div class="briefing-item" style="border-color:rgba(143,168,110,.3)"><span class="briefing-tag tag-green">표현</span><div class="briefing-text">"I have passion to" → <strong>"I'm passionate about"</strong></div></div>
+      <!-- 분석 후 자동으로 맨 위에 추가됨 -->
+      <div id="dashboard-briefing-list">
+        <div class="briefing-item" style="border-color:rgba(201,106,90,.3)"><span class="briefing-tag tag-red">관사</span><div class="briefing-text">"The pros <strong>are</strong>" — 복수 주어엔 복수 동사</div></div>
+        <div class="briefing-item" style="border-color:rgba(200,137,90,.3)"><span class="briefing-tag tag-amber">연결어</span><div class="briefing-text">so 연발 → <strong>while / that said / on top of that</strong></div></div>
+        <div class="briefing-item" style="border-color:rgba(143,168,110,.3)"><span class="briefing-tag tag-green">표현</span><div class="briefing-text">"I have passion to" → <strong>"I'm passionate about"</strong></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- 최근 수업 요약 (분석 후 표시) -->
+  <div id="dashboard-latest-lesson" style="display:none">
+    <div class="card" style="border-color:rgba(200,185,122,.25)">
+      <div class="card-title" style="color:var(--accent)">📊 최근 수업 분석 결과</div>
+      <div id="dashboard-latest-content"></div>
     </div>
   </div>
 </div>
@@ -293,7 +317,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="page-subtitle">오늘 Ringle 수업에서 의식할 포인트</div>
   </div>
 
-  <!-- 최근 수업 분석 결과 동적 반영 -->
   <div class="card" id="recent-lesson-card" style="display:none;border-color:rgba(200,185,122,.3)">
     <div class="card-title" style="color:var(--accent)">⚡ 최근 수업에서 나온 오류</div>
     <div id="recent-lesson-errors"></div>
@@ -445,8 +468,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     </div>
   </div>
 
-
-
   <div class="tab-panel" id="tab-memo">
     <div class="card" style="margin-bottom:0">
       <div class="card-title">미팅 / 대화 메모</div>
@@ -514,7 +535,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="settings-section">
     <div class="settings-title">앱 정보</div>
     <div style="font-size:12px;color:var(--text3);line-height:1.8;font-family:var(--mono)">
-      버전: 1.1.0<br>모델: claude-sonnet-4-6<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
+      버전: 1.2.0<br>모델: claude-sonnet-4-6<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
     </div>
   </div>
 </div>
@@ -544,9 +565,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="toast" id="toast"></div>
 
 <script>
-const STORAGE_KEY='eng_v2',API_KEY_S='eng_api_key',DAILY_KEY='eng_daily';
-let apiKey='',sessions=[],diaryEntries=[];
-let drillCorrect=0,drillWrong=0,drillIndex=0,answerShown=false,drillQueue=[];
+const STORAGE_KEY='eng_v2', API_KEY_S='eng_api_key', DAILY_KEY='eng_daily';
+const BASE_SESSIONS = 29; // 앱 초기 기준 수업 수
+
+let apiKey='', sessions=[], diaryEntries=[];
+let drillCorrect=0, drillWrong=0, drillIndex=0, drillAnswered=false, drillQueue=[];
+let drillWrongBank=[];
 
 const SENTENCE_POOL=[
   {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"I fell into consulting, and it turned out I was completely cut out for it.",korean:"나는 우연히 컨설팅을 시작하게 됐고, 알고 보니 완전히 적성에 맞았어.",note:"'fell into' = 우연히 ~하게 됐다. 내가 자주 쓰던 'happened to get into'의 교정."},
@@ -585,22 +609,170 @@ const DRILLS=[
   {korean:"I don't have enough brain ability",english:"I don't have the bandwidth / my brain is just fried",note:"brain ability는 어색. bandwidth(여유) 또는 capacity."},
 ];
 
+// ── 에러 타입 분류 헬퍼 ────────────────────────────────
+function classifyErrors(errors){
+  const types = {article:0, translation:0, connector:0, verb:0, other:0};
+  (errors||[]).forEach(e => {
+    const t = (e.type||'other').toLowerCase();
+    if(types[t] !== undefined) types[t]++;
+    else types.other++;
+  });
+  return types;
+}
+
+// ── 대시보드 업데이트 ─────────────────────────────────
+function updateDashboard(parsed){
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  // 1. 총 수업 수
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  // 2. 정체 오류 / 개선 영역 — 이번 수업 기준
+  const types = classifyErrors(allErrors);
+  const stagnant = (types.article||0) + (types.translation||0) + (types.connector||0);
+  const improving = (types.verb||0) + (types.other||0);
+
+  if(stagnant > 0){
+    document.getElementById('stat-stagnant').textContent = stagnant;
+    // sub 텍스트도 실제 내용으로
+    const stagnantLabels = [];
+    if(types.article) stagnantLabels.push('관사');
+    if(types.translation) stagnantLabels.push('직역');
+    if(types.connector) stagnantLabels.push('연결어');
+    document.getElementById('stat-stagnant-sub').textContent = stagnantLabels.join('·') || '관사·직역·연결어';
+  }
+
+  if(improving > 0){
+    document.getElementById('stat-improving').textContent = improving;
+  }
+
+  // 3. "오늘 의식할 것" — 최근 수업 과제를 맨 위에 삽입
+  const briefingList = document.getElementById('dashboard-briefing-list');
+  if(parsed.briefing_for_next && briefingList){
+    // 이전에 추가된 최근 수업 아이템이 있으면 제거
+    const existing = briefingList.querySelector('.from-lesson');
+    if(existing) existing.remove();
+
+    const newItem = document.createElement('div');
+    newItem.className = 'briefing-item from-lesson';
+    newItem.style.cssText = 'border-color:rgba(200,185,122,.4);order:-1;';
+    newItem.innerHTML = `<span class="briefing-tag tag-amber">최근 수업</span><div class="briefing-text">${parsed.briefing_for_next}</div>`;
+    briefingList.insertAdjacentElement('afterbegin', newItem);
+  }
+
+  // 4. 대시보드 "반복 오류" — 이번 수업 오류가 있으면 상위에 추가
+  if(allErrors.length > 0){
+    const errorList = document.getElementById('dashboard-error-list');
+    // 이전 것 제거
+    errorList.querySelectorAll('.from-lesson').forEach(el => el.remove());
+
+    allErrors.slice(0, 2).forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'from-lesson';
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      div.innerHTML = `<div class="error-header"><span class="error-name">${e.original||''}</span><span style="font-size:11px;font-family:var(--mono);color:${color}">이번 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:85%;background:${color}"></div></div><div class="error-trend" style="color:${color}">→ 확인 필요</div>`;
+      errorList.insertAdjacentElement('afterbegin', div);
+    });
+  }
+
+  // 5. 대시보드 "최근 수업 분석 결과" 카드 표시
+  const latestCard = document.getElementById('dashboard-latest-lesson');
+  const latestContent = document.getElementById('dashboard-latest-content');
+  if(latestCard && latestContent && allErrors.length > 0){
+    latestCard.style.display = 'block';
+    let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px">📅 ${new Date().toISOString().slice(0,10)} · ${parsed.session_topic||'수업 분석'}</div>`;
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">`;
+    allErrors.slice(0,4).forEach(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      html += `<span style="font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.05);color:${color}">${e.original||''} → ${e.corrected||''}</span>`;
+    });
+    html += `</div>`;
+    if(parsed.briefing_for_next){
+      html += `<div style="font-size:12px;color:var(--accent);padding:8px 10px;background:rgba(200,185,122,.08);border-radius:6px;border-left:2px solid var(--accent)">👉 ${parsed.briefing_for_next}</div>`;
+    }
+    latestContent.innerHTML = html;
+  }
+
+  // 6. 수업 기록(history) 탭 업데이트
+  updateHistoryList(parsed);
+
+  // 7. 설정 페이지 총 수업 수
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
+// ── 수업 기록 업데이트 ────────────────────────────────
+function updateHistoryList(parsed){
+  const list = document.getElementById('history-list');
+  if(!list) return;
+
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '.');
+  const topic = parsed.session_topic || '수업';
+
+  const tags = allErrors.slice(0,3).map(e => {
+    const color = (e.type==='article'||e.type==='translation') ? 'var(--red)'
+      : (e.type==='connector'||e.type==='verb') ? 'var(--amber)'
+      : 'var(--text3)';
+    const label = e.original ? `${e.original.slice(0,12)}→${(e.corrected||'').slice(0,12)}` : '';
+    return `<span class="err-tag" style="color:${color}">${label}</span>`;
+  }).join('');
+
+  const newItem = document.createElement('div');
+  newItem.className = 'timeline-item';
+  newItem.style.borderTop = '2px solid rgba(200,185,122,.2)';
+  newItem.innerHTML = `
+    <div class="timeline-date">${dateStr}</div>
+    <div class="timeline-content">
+      <div class="timeline-topic">${topic}</div>
+      <div class="timeline-errors">${tags}</div>
+    </div>`;
+  list.insertAdjacentElement('afterbegin', newItem);
+}
+
+// ── 초기화 ────────────────────────────────────────────
 function init(){
-  apiKey=localStorage.getItem(API_KEY_S)||'';
-  document.getElementById('api-key-input').value=apiKey;
+  apiKey = localStorage.getItem(API_KEY_S)||'';
+  document.getElementById('api-key-input').value = apiKey;
   updateApiStatus(!!apiKey);
-  try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');sessions=s.sessions||[];diaryEntries=s.diaryEntries||[];}catch(e){}
-  shuffleDrill();loadDrill();
-  loadDailyInfo();renderDiaryHistory();updateStreak();
+
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    sessions = s.sessions||[];
+    diaryEntries = s.diaryEntries||[];
+  }catch(e){}
+
+  try{ drillWrongBank = JSON.parse(localStorage.getItem('drill_wrongs')||'[]'); }catch(e){}
+
+  // 총 수업 수 반영
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  shuffleDrill(); loadDrill();
+  loadDailyInfo(); renderDiaryHistory(); updateStreak();
+  renderWrongBank();
   restoreRecentLesson();
 }
 
 function updateApiStatus(ok){
-  document.getElementById('api-dot').className='api-dot'+(ok?' ok':'');
-  document.getElementById('api-status-text').textContent=ok?'API 연결됨':'API 미연결';
+  document.getElementById('api-dot').className = 'api-dot'+(ok?' ok':'');
+  document.getElementById('api-status-text').textContent = ok?'API 연결됨':'API 미연결';
 }
 
-function nav(page,el){
+function nav(page, el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
   document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
@@ -608,7 +780,7 @@ function nav(page,el){
   window.scrollTo(0,0);
 }
 
-function switchTab(name,el){
+function switchTab(name, el){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
@@ -616,96 +788,99 @@ function switchTab(name,el){
 }
 
 function saveApiKey(){
-  const key=document.getElementById('api-key-input').value.trim();
+  const key = document.getElementById('api-key-input').value.trim();
   if(!key){toast('API 키를 입력해주세요.');return;}
-  localStorage.setItem(API_KEY_S,key);apiKey=key;updateApiStatus(true);toast('저장됐어요!');
+  localStorage.setItem(API_KEY_S, key); apiKey=key; updateApiStatus(true); toast('저장됐어요!');
 }
 
 async function testApiKey(){
-  const key=document.getElementById('api-key-input').value.trim()||apiKey;
+  const key = document.getElementById('api-key-input').value.trim()||apiKey;
   if(!key){toast('API 키를 먼저 입력해주세요.');return;}
-  const st=document.getElementById('key-status');st.textContent='테스트 중...';st.style.color='var(--text3)';
+  const st = document.getElementById('key-status');
+  st.textContent='테스트 중...'; st.style.color='var(--text3)';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
     if(r.ok){st.textContent='✓ 연결 성공';st.style.color='var(--green)';apiKey=key;updateApiStatus(true);}
     else{st.textContent='✗ 키 오류';st.style.color='var(--red)';}
   }catch(e){st.textContent='✗ 네트워크 오류';st.style.color='var(--red)';}
 }
 
-// Daily
+// ── Daily Sentence ────────────────────────────────────
 function loadDailyInfo(){
-  const today=new Date().toISOString().slice(0,10);
-  document.getElementById('s-date').textContent=today;
-  const saved=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
-  if(saved.date===today&&saved.sentence)renderSentence(saved.sentence);
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('s-date').textContent = today;
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  if(saved.date===today && saved.sentence) renderSentence(saved.sentence);
   else pickDailySentence();
 }
 
 function pickDailySentence(){
-  const roll=Math.random();
+  const roll = Math.random();
   let pool;
-  if(roll<0.4)pool=SENTENCE_POOL.filter(s=>s.type==='correction');
-  else if(roll<0.7)pool=SENTENCE_POOL.filter(s=>s.type==='business');
-  else pool=SENTENCE_POOL.filter(s=>s.type==='casual');
-  const picked=pool[Math.floor(Math.random()*pool.length)];
-  localStorage.setItem(DAILY_KEY,JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:picked}));
+  if(roll<0.4) pool = SENTENCE_POOL.filter(s=>s.type==='correction');
+  else if(roll<0.7) pool = SENTENCE_POOL.filter(s=>s.type==='business');
+  else pool = SENTENCE_POOL.filter(s=>s.type==='casual');
+  const picked = pool[Math.floor(Math.random()*pool.length)];
+  localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:picked}));
   renderSentence(picked);
 }
 
 function renderSentence(s){
-  const badge=document.getElementById('s-type-badge');
-  badge.textContent=s.badge;badge.className='sentence-type briefing-tag '+s.badgeClass;
-  document.getElementById('s-english').textContent=s.english;
-  document.getElementById('s-korean').textContent=s.korean;
-  document.getElementById('s-note').textContent=s.note;
+  const badge = document.getElementById('s-type-badge');
+  badge.textContent = s.badge; badge.className = 'sentence-type briefing-tag '+s.badgeClass;
+  document.getElementById('s-english').textContent = s.english;
+  document.getElementById('s-korean').textContent = s.korean;
+  document.getElementById('s-note').textContent = s.note;
 }
 
 async function generateDailySentence(){
   if(!apiKey){pickDailySentence();toast('풀에서 새 문장을 뽑았어요!');return;}
-  const btn=document.getElementById('gen-btn');btn.disabled=true;btn.textContent='생성 중...';
+  const btn = document.getElementById('gen-btn');
+  btn.disabled=true; btn.textContent='생성 중...';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
-    const data=await r.json();
-    const s=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-    localStorage.setItem(DAILY_KEY,JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:s}));
-    renderSentence(s);toast('새 문장이 생성됐어요!');
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
+    const data = await r.json();
+    const s = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:s}));
+    renderSentence(s); toast('새 문장이 생성됐어요!');
   }catch(e){pickDailySentence();toast('풀에서 문장을 뽑았어요.');}
-  btn.disabled=false;btn.innerHTML='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg> 새 문장 생성';
+  btn.disabled=false;
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg> 새 문장 생성';
 }
 
 async function checkDiary(){
-  const text=document.getElementById('diary-input').value.trim();
+  const text = document.getElementById('diary-input').value.trim();
   if(!text){toast('문장을 먼저 써보세요.');return;}
   if(!apiKey){toast('설정에서 API 키를 입력해주세요.');return;}
   document.getElementById('diary-loading').style.display='block';
   document.getElementById('diary-feedback').style.display='none';
-  const saved=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
-  const target=saved.sentence?.english||'';
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  const target = saved.sentence?.english||'';
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
-    const data=await r.json();
-    const fb=document.getElementById('diary-feedback');
-    fb.textContent=data.content.map(i=>i.text||'').join('');fb.style.display='block';
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
+    const data = await r.json();
+    const fb = document.getElementById('diary-feedback');
+    fb.textContent = data.content.map(i=>i.text||'').join(''); fb.style.display='block';
   }catch(e){toast('피드백 요청 실패.');}
   document.getElementById('diary-loading').style.display='none';
 }
 
 function saveDiaryEntry(){
-  const text=document.getElementById('diary-input').value.trim();
+  const text = document.getElementById('diary-input').value.trim();
   if(!text){toast('먼저 문장을 써보세요.');return;}
-  const saved=JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
   diaryEntries.unshift({date:new Date().toISOString().slice(0,10),entry:text,sentence:saved.sentence?.english||''});
-  if(diaryEntries.length>60)diaryEntries=diaryEntries.slice(0,60);
-  saveState();renderDiaryHistory();
+  if(diaryEntries.length>60) diaryEntries=diaryEntries.slice(0,60);
+  saveState(); renderDiaryHistory();
   document.getElementById('diary-input').value='';
   document.getElementById('diary-feedback').style.display='none';
-  updateStreak();toast('저장됐어요! 🎉');
+  updateStreak(); toast('저장됐어요! 🎉');
 }
 
 function renderDiaryHistory(){
-  const list=document.getElementById('diary-history-list');
+  const list = document.getElementById('diary-history-list');
   if(!diaryEntries.length){list.innerHTML='<span style="font-size:13px;color:var(--text3)">아직 저장된 일기가 없어요.</span>';return;}
-  list.innerHTML=diaryEntries.slice(0,5).map(e=>`
+  list.innerHTML = diaryEntries.slice(0,5).map(e=>`
     <div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
       <div style="font-size:13px;color:var(--text);margin-bottom:4px">${e.entry}</div>
@@ -715,24 +890,24 @@ function renderDiaryHistory(){
 
 function updateStreak(){
   if(!diaryEntries.length){document.getElementById('streak-val').textContent=0;return;}
-  let streak=0,d=new Date();
+  let streak=0, d=new Date();
   for(let i=0;i<60;i++){
-    const ds=d.toISOString().slice(0,10);
+    const ds = d.toISOString().slice(0,10);
     if(diaryEntries.find(e=>e.date===ds)){streak++;d.setDate(d.getDate()-1);}
     else{if(i===0){d.setDate(d.getDate()-1);continue;}break;}
   }
   document.getElementById('streak-val').textContent=streak;
 }
 
-// Upload — dual PDF (feedback + script)
-const dualFiles = { feedback: null, script: null };
+// ── Upload — dual PDF ────────────────────────────────
+const dualFiles = {feedback:null, script:null};
 
 function dragOver(e){e.preventDefault();e.currentTarget.classList.add('dragover');}
 function dragLeave(e){e.currentTarget.classList.remove('dragover');}
 
 function dropDual(e, type){
-  e.preventDefault();e.currentTarget.classList.remove('dragover');
-  const f=e.dataTransfer.files[0];
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
   if(f?.type==='application/pdf') loadDualFile(f, type);
   else toast('PDF 파일만 가능합니다.');
 }
@@ -740,32 +915,23 @@ function dropDual(e, type){
 function loadDualFile(file, type){
   if(!file) return;
   dualFiles[type] = file;
+  document.getElementById('icon-'+type).textContent = '✅';
+  document.getElementById('text-'+type).textContent = file.name.slice(0,30)+(file.name.length>30?'...':'');
+  document.getElementById('hint-'+type).textContent = Math.round(file.size/1024)+'KB';
+  document.getElementById('zone-'+type).style.borderColor = 'var(--green)';
 
-  // UI 업데이트
-  const icon = document.getElementById('icon-'+type);
-  const text = document.getElementById('text-'+type);
-  const hint = document.getElementById('hint-'+type);
-  const zone = document.getElementById('zone-'+type);
-  icon.textContent = '✅';
-  text.textContent = file.name.slice(0, 30) + (file.name.length > 30 ? '...' : '');
-  hint.textContent = (Math.round(file.size/1024)) + 'KB';
-  zone.style.borderColor = 'var(--green)';
-
-  // 피드백 PDF라도 있으면 버튼 활성화
   const btn = document.getElementById('analyze-dual-btn');
-  if(dualFiles.feedback) {
+  if(dualFiles.feedback){
     btn.disabled = false;
-    if(dualFiles.script) btn.textContent = '두 PDF 합쳐서 분석하기';
-    else btn.textContent = '피드백 PDF만 분석하기';
+    btn.textContent = dualFiles.script ? '두 PDF 합쳐서 분석하기' : '피드백 PDF만 분석하기';
   }
 }
 
 async function analyzeDualPDF(){
   if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
   if(!dualFiles.feedback){toast('튜터 피드백 PDF를 먼저 올려주세요.');return;}
-  showLoading(true);showResult(false);
+  showLoading(true); showResult(false);
 
-  // 두 파일을 base64로 변환
   function toBase64(file){
     return new Promise((res,rej)=>{
       const r=new FileReader();
@@ -785,13 +951,10 @@ async function analyzeDualPDF(){
 3) Connector overuse: repeating "so" instead of while/whereas/that said
 4) Verb nuance: "deal with" (negative connotation when not intended), "composed of" (overused)`;
 
-    // content 배열 구성 — 피드백 PDF는 항상, 스크립트 PDF는 있을 때만
     const contentArr = [
       {type:'document', source:{type:'base64', media_type:'application/pdf', data:feedbackB64}},
     ];
-    if(scriptB64){
-      contentArr.push({type:'document', source:{type:'base64', media_type:'application/pdf', data:scriptB64}});
-    }
+    if(scriptB64) contentArr.push({type:'document', source:{type:'base64', media_type:'application/pdf', data:scriptB64}});
 
     const promptText = scriptB64
       ? `You are analyzing TWO PDFs from a Ringle English tutoring session for a Korean business consultant.
@@ -809,9 +972,9 @@ Analyze BOTH documents together and return:
 Return JSON only:
 {
   "session_topic": "주제 한국어",
-  "tutor_corrections": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
-  "tutor_missed_errors": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
-  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb","explanation_ko":"설명"}],
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "tutor_missed_errors": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
   "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
   "improvements_noted": ["개선된 점"],
   "briefing_for_next": "다음 수업 최우선 과제 한 가지"
@@ -823,9 +986,9 @@ ${knownErrors}
 Return JSON only:
 {
   "session_topic": "주제 한국어",
-  "tutor_corrections": [{"original":"phrase","corrected":"better","explanation_ko":"설명"}],
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
   "tutor_missed_errors": [],
-  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb","explanation_ko":"설명"}],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
   "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
   "improvements_noted": [],
   "briefing_for_next": "다음 수업 최우선 과제 한 가지"
@@ -842,100 +1005,83 @@ Return JSON only:
     let rawText = data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
     const jsonStart = rawText.indexOf('{');
     const jsonEnd = rawText.lastIndexOf('}');
-    if(jsonStart === -1 || jsonEnd === -1) throw new Error('JSON 없음');
+    if(jsonStart===-1||jsonEnd===-1) throw new Error('JSON 없음');
     rawText = rawText.slice(jsonStart, jsonEnd+1);
     const parsed = JSON.parse(rawText);
+
     renderDualResult(parsed, !!scriptB64);
+
+    // ✅ 핵심: 세션 저장 → 대시보드/브리핑/드릴 모두 업데이트
     sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:dualFiles.feedback.name, source:'dual-pdf'});
     saveState();
     syncAnalysisToLearning(parsed);
+    updateDashboard(parsed);
+
   }catch(e){toast('분석 실패: '+e.message); console.error(e);}
   finally{showLoading(false);}
 }
 
 function renderDualResult(p, hasScript){
-  document.getElementById('result-title').textContent = (p.session_topic||'수업 분석') + (hasScript ? ' — 피드백 + 스크립트' : ' — 피드백');
+  document.getElementById('result-title').textContent = (p.session_topic||'수업 분석')+(hasScript?' — 피드백 + 스크립트':' — 피드백');
   let html='';
 
-  // 튜터가 교정한 것
   if(p.tutor_corrections?.length){
     html+=`<div class="analysis-chunk"><div class="chunk-label">📝 튜터 교정 (${p.tutor_corrections.length}건)</div>`;
     p.tutor_corrections.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)');});
     html+='</div>';
   }
-
-  // 튜터가 놓친 것 (스크립트 있을 때만)
   if(p.tutor_missed_errors?.length){
     html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">⚠ 튜터가 놓친 오류 (${p.tutor_missed_errors.length}건)</div>`;
     p.tutor_missed_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
     html+='</div>';
   }
-
-  // 반복 패턴
   if(p.recurring_errors_found?.length){
     html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">🔁 이전 수업과 같은 오류 (${p.recurring_errors_found.length}건)</div>`;
     p.recurring_errors_found.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
     html+='</div>';
   }
-
-  // 새 표현
   if(p.new_expressions?.length){
     html+=`<div class="analysis-chunk"><div class="chunk-label">✨ 새로운 표현</div>`;
     p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
     html+='</div>';
   }
-
-  // 개선된 점
   if(p.improvements_noted?.length){
     html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--green)">👍 개선된 점</div>${p.improvements_noted.map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`).join('')}</div>`;
   }
-
-  // 다음 수업 과제
   if(p.briefing_for_next){
     html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 최우선 과제</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
   }
 
-  document.getElementById('result-content').innerHTML=html;
+  document.getElementById('result-content').innerHTML = html;
   showResult(true);
-  toast('분석 완료! 🎉');
+  toast('분석 완료! 🎉 대시보드가 업데이트됐어요.');
 }
 
 async function analyzeMemo(){
-  const memo=document.getElementById('memo-input').value.trim();
+  const memo = document.getElementById('memo-input').value.trim();
   if(!memo){toast('내용을 입력해주세요.');return;}
   if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
-  showLoading(true);showResult(false);
+  showLoading(true); showResult(false);
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","key_errors":[{"original":"phrase","corrected":"better","explanation_ko":"설명"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
-    const data=await r.json();
-    const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","tutor_corrections":[],"tutor_missed_errors":[],"recurring_errors_found":[],"key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[],"improvements_noted":[],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
+    const data = await r.json();
+    const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
     renderPDFResult(parsed);
-    sessions.unshift({...parsed,date:new Date().toISOString().slice(0,10),filename:'memo',source:'memo'});
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:'memo', source:'memo'});
     saveState();
     syncAnalysisToLearning(parsed);
-  }catch(e){toast('분석 실패: '+e.message);}
-  finally{showLoading(false);}
-}
-
-async function analyzeWithClaude(base64Data,filename){
-  showLoading(true);showResult(false);
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:base64Data}},{type:'text',text:'Analyze this Ringle tutoring PDF. Return JSON: {"session_topic":"주제 한국어","key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[{"expression":"expr","meaning_ko":"뜻","example":"ex"}],"improvement_note":"피드백","briefing_for_next":"다음 주의점"} Return ONLY valid JSON.'}]}]})});
-    const data=await r.json();
-    const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-    renderPDFResult(parsed);
-    sessions.unshift({...parsed,date:new Date().toISOString().slice(0,10),filename,source:'pdf'});
-    saveState();
+    updateDashboard(parsed);
   }catch(e){toast('분석 실패: '+e.message);}
   finally{showLoading(false);}
 }
 
 function renderPDFResult(p){
-  document.getElementById('result-title').textContent=p.session_topic||'분석 결과';
+  document.getElementById('result-title').textContent = p.session_topic||'분석 결과';
   let html='';
-  if(p.key_errors?.length){
-    html+=`<div class="analysis-chunk"><div class="chunk-label">발견된 오류 (${p.key_errors.length}건)</div>`;
-    p.key_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko);});
+  const errors = p.key_errors||p.tutor_corrections||[];
+  if(errors.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">발견된 오류 (${errors.length}건)</div>`;
+    errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko);});
     html+='</div>';
   }
   if(p.new_expressions?.length){
@@ -943,48 +1089,40 @@ function renderPDFResult(p){
     p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
     html+='</div>';
   }
-  if(p.improvement_note)html+=`<div class="analysis-chunk"><div class="chunk-label">피드백</div><div style="font-size:13px;color:var(--text2)">${p.improvement_note}</div></div>`;
-  if(p.briefing_for_next)html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 전 의식할 것</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  if(p.improvement_note) html+=`<div class="analysis-chunk"><div class="chunk-label">피드백</div><div style="font-size:13px;color:var(--text2)">${p.improvement_note}</div></div>`;
+  if(p.briefing_for_next) html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 전 의식할 것</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
   document.getElementById('result-content').innerHTML=html;
-  showResult(true);toast('분석 완료!');
+  showResult(true); toast('분석 완료!');
 }
 
-function errHTML(original,corrected,note,color='var(--red)'){
-  return`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="color:${color};font-family:var(--mono);font-size:12px;text-decoration:line-through">${original}</span><span style="color:var(--text3)">→</span><span style="color:var(--green);font-family:var(--mono);font-size:12px">${corrected}</span></div><div style="font-size:11px;color:var(--text3)">${note||''}</div></div>`;
+function errHTML(original, corrected, note, color='var(--red)'){
+  return`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="color:${color};font-family:var(--mono);font-size:12px;text-decoration:line-through">${original||''}</span><span style="color:var(--text3)">→</span><span style="color:var(--green);font-family:var(--mono);font-size:12px">${corrected||''}</span></div><div style="font-size:11px;color:var(--text3)">${note||''}</div></div>`;
 }
 
 function showLoading(v){document.getElementById('analyze-loading').style.display=v?'block':'none';}
 function showResult(v){document.getElementById('analysis-result').classList.toggle('visible',v);}
 
-// Drill
-// ── Drill — 주관식 입력 + Claude 채점 ──────────────────────
-let drillWrongBank = []; // 누적 오답
-let drillChecking = false;
-let drillAnswered = false;
-
+// ── Drill ─────────────────────────────────────────────
 function shuffleDrill(){
-  drillQueue=[...DRILLS].sort(()=>Math.random()-.5);
-  drillIndex=0;drillCorrect=0;drillWrong=0;drillAnswered=false;
-  // 저장된 오답 불러오기
-  try{ drillWrongBank=JSON.parse(localStorage.getItem('drill_wrongs')||'[]'); }catch(e){}
-  renderWrongBank();
+  drillQueue = [...DRILLS].sort(()=>Math.random()-.5);
+  drillIndex=0; drillCorrect=0; drillWrong=0; drillAnswered=false;
 }
 
 function loadDrill(){
   if(drillIndex>=drillQueue.length){
-    // 세션 완료
     document.getElementById('drill-korean').textContent='세션 완료! 🎉';
     document.getElementById('drill-input').style.display='none';
     document.getElementById('drill-submit-btn').style.display='none';
     document.getElementById('drill-skip-btn').style.display='none';
     document.getElementById('drill-next-btn').style.display='none';
-    document.getElementById('drill-feedback').className='drill-feedback correct';
-    document.getElementById('drill-feedback').textContent=`✓ ${drillCorrect}개 맞음  ✗ ${drillWrong}개 틀림`;
-    document.getElementById('drill-feedback').style.display='block';
+    const fb = document.getElementById('drill-feedback');
+    fb.className='drill-feedback correct';
+    fb.textContent=`✓ ${drillCorrect}개 맞음  ✗ ${drillWrong}개 틀림`;
+    fb.style.display='block';
     document.getElementById('drill-progress').textContent='세션 완료';
     return;
   }
-  const item=drillQueue[drillIndex];
+  const item = drillQueue[drillIndex];
   document.getElementById('drill-korean').textContent=item.korean;
   document.getElementById('drill-input').value='';
   document.getElementById('drill-input').className='drill-input';
@@ -1000,8 +1138,7 @@ function loadDrill(){
   document.getElementById('drill-progress').textContent=`${drillIndex+1} / ${drillQueue.length}`;
   document.getElementById('drill-remaining').textContent=drillQueue.length-drillIndex;
   drillAnswered=false;
-  // Enter 키로 제출
-  const input=document.getElementById('drill-input');
+  const input = document.getElementById('drill-input');
   input.onkeydown=e=>{ if(e.key==='Enter'&&!drillAnswered) submitDrill(); };
   setTimeout(()=>input.focus(), 100);
 }
@@ -1009,20 +1146,18 @@ function loadDrill(){
 async function submitDrill(){
   if(drillAnswered) return;
   const userAnswer = document.getElementById('drill-input').value.trim();
-  if(!userAnswer){ toast('영어로 입력해주세요.'); return; }
+  if(!userAnswer){toast('영어로 입력해주세요.');return;}
 
   drillAnswered=true;
-  const item=drillQueue[drillIndex];
-  const submitBtn=document.getElementById('drill-submit-btn');
-  submitBtn.disabled=true;
-  submitBtn.textContent='채점 중...';
+  const item = drillQueue[drillIndex];
+  const submitBtn = document.getElementById('drill-submit-btn');
+  submitBtn.disabled=true; submitBtn.textContent='채점 중...';
 
-  // API 있으면 Claude 채점, 없으면 간단 키워드 매칭
-  let isCorrect=false, feedbackText='', modelAnswer=item.english;
+  let isCorrect=false, feedbackText='';
 
   if(apiKey){
     try{
-      const r=await fetch('https://api.anthropic.com/v1/messages',{
+      const r = await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:
@@ -1035,26 +1170,20 @@ Is the answer correct or acceptable? Consider meaning and naturalness, not exact
 Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장 피드백. 맞으면 칭찬+뉘앙스 팁, 틀리면 어디가 어색한지"}`
         }]})
       });
-      const data=await r.json();
-      const parsed=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
-      isCorrect=parsed.correct;
-      feedbackText=parsed.feedback_ko;
+      const data = await r.json();
+      const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+      isCorrect=parsed.correct; feedbackText=parsed.feedback_ko;
     }catch(e){
-      // fallback: 키워드 매칭
       const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
-      const userLower=userAnswer.toLowerCase();
-      isCorrect=keywords.some(k=>userLower.includes(k));
+      isCorrect=keywords.some(k=>userAnswer.toLowerCase().includes(k));
       feedbackText=isCorrect?'잘했어요!':'다시 한 번 확인해보세요.';
     }
   } else {
-    // API 없을 때 키워드 매칭
     const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
-    const userLower=userAnswer.toLowerCase();
-    isCorrect=keywords.filter(k=>userLower.includes(k)).length>=2;
+    isCorrect=keywords.filter(k=>userAnswer.toLowerCase().includes(k)).length>=2;
     feedbackText=isCorrect?'정답이에요! (API 연결 시 더 정밀한 채점 가능)':'아쉬워요. 모범 답안을 확인해보세요. (API 연결 시 자세한 피드백 가능)';
   }
 
-  // 결과 표시
   const input=document.getElementById('drill-input');
   const feedback=document.getElementById('drill-feedback');
   const model=document.getElementById('drill-model');
@@ -1064,19 +1193,17 @@ Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장
   feedback.className='drill-feedback '+(isCorrect?'correct':'wrong');
   feedback.textContent=(isCorrect?'✓ ':'✗ ')+feedbackText;
   feedback.style.display='block';
-  model.textContent='모범 답안: '+modelAnswer;
+  model.textContent='모범 답안: '+item.english;
   model.style.display='block';
   note.textContent=item.note;
   note.style.display='block';
 
-  // 점수 업데이트
   if(isCorrect){
     drillCorrect++;
     document.getElementById('drill-correct').textContent=drillCorrect;
   } else {
     drillWrong++;
     document.getElementById('drill-wrong').textContent=drillWrong;
-    // 오답 누적 저장
     addToWrongBank(item, userAnswer);
   }
 
@@ -1084,23 +1211,16 @@ Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장
   document.getElementById('drill-next-btn').style.display='inline-flex';
 }
 
-function nextDrill(){
-  drillIndex++;
-  loadDrill();
-}
-
-function skipDrill(){
-  drillIndex++;
-  loadDrill();
-}
+function nextDrill(){drillIndex++;loadDrill();}
+function skipDrill(){drillIndex++;loadDrill();}
 
 function addToWrongBank(item, userAnswer){
   const entry={
-    date: new Date().toISOString().slice(0,10),
-    korean: item.korean,
-    modelEnglish: item.english,
-    userAnswer: userAnswer,
-    note: item.note,
+    date:new Date().toISOString().slice(0,10),
+    korean:item.korean,
+    modelEnglish:item.english,
+    userAnswer:userAnswer,
+    note:item.note,
   };
   drillWrongBank.unshift(entry);
   if(drillWrongBank.length>30) drillWrongBank=drillWrongBank.slice(0,30);
@@ -1114,7 +1234,7 @@ function renderWrongBank(){
   const preview=document.getElementById('drill-wrongs-preview');
   const previewList=document.getElementById('drill-wrongs-list');
 
-  if(!drillWrongBank.length){ bank.style.display='none'; preview.style.display='none'; return; }
+  if(!drillWrongBank.length){bank.style.display='none';preview.style.display='none';return;}
 
   bank.style.display='block';
   list.innerHTML=drillWrongBank.slice(0,8).map(e=>`
@@ -1125,8 +1245,8 @@ function renderWrongBank(){
       <div style="font-size:12px;color:var(--green)">정답: <span style="font-family:var(--mono)">${e.modelEnglish}</span></div>
     </div>`).join('')+(drillWrongBank.length>8?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${drillWrongBank.length-8}개 더</div>`:'');
 
-  // 세션 내 오답 미리보기
-  const sessionWrongs=drillWrongBank.filter(e=>e.date===new Date().toISOString().slice(0,10));
+  const today=new Date().toISOString().slice(0,10);
+  const sessionWrongs=drillWrongBank.filter(e=>e.date===today);
   if(sessionWrongs.length>0){
     preview.style.display='block';
     previewList.innerHTML=sessionWrongs.slice(0,3).map(e=>`
@@ -1146,50 +1266,42 @@ function clearWrongBank(){
   toast('오답 초기화됐어요.');
 }
 
-function saveState(){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify({sessions,diaryEntries}));
-  document.getElementById('total-sessions').textContent=29+sessions.length;
-}
-
-// ── 분석 결과 → 브리핑 & 드릴 자동 반영 ─────────────────
+// ── 분석 결과 → 브리핑 & 드릴 자동 반영 ────────────────
 function syncAnalysisToLearning(parsed){
-  // 1. 이번 수업 오류를 drillWrongBank에 추가 (드릴 인풋)
   const allErrors = [
     ...(parsed.tutor_corrections||[]),
     ...(parsed.tutor_missed_errors||[]),
     ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
   ];
 
+  // 드릴 오답 뱅크에 수업 오류 추가
   allErrors.forEach(e => {
-    if(!e.original || !e.corrected) return;
-    const entry = {
-      date: new Date().toISOString().slice(0,10),
-      korean: e.original,
-      modelEnglish: e.corrected,
-      userAnswer: '',
-      note: e.explanation_ko || '',
-      source: 'lesson', // 수업 분석에서 온 것 표시
+    if(!e.original||!e.corrected) return;
+    const entry={
+      date:new Date().toISOString().slice(0,10),
+      korean:e.original,
+      modelEnglish:e.corrected,
+      userAnswer:'',
+      note:e.explanation_ko||'',
+      source:'lesson',
     };
     drillWrongBank.unshift(entry);
   });
-  // 최대 50개
   if(drillWrongBank.length>50) drillWrongBank=drillWrongBank.slice(0,50);
   localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
   renderWrongBank();
 
-  // 2. 브리핑 페이지 "최근 수업 오류" 섹션 업데이트
-  const card = document.getElementById('recent-lesson-card');
-  const errList = document.getElementById('recent-lesson-errors');
-  const priority = document.getElementById('recent-lesson-priority');
+  // 브리핑 페이지 최근 수업 카드
+  const card=document.getElementById('recent-lesson-card');
+  const errList=document.getElementById('recent-lesson-errors');
+  const priority=document.getElementById('recent-lesson-priority');
 
-  if(card && allErrors.length > 0){
-    card.style.display = 'block';
-    errList.innerHTML = allErrors.slice(0,4).map(e => {
-      const typeColor = e.type==='article' ? 'var(--red)'
-        : e.type==='translation' ? 'var(--red)'
-        : e.type==='connector' ? 'var(--amber)'
-        : 'var(--amber)';
-      return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+  if(card && allErrors.length>0){
+    card.style.display='block';
+    errList.innerHTML=allErrors.slice(0,4).map(e=>{
+      const typeColor=(e.type==='article'||e.type==='translation')?'var(--red)':'var(--amber)';
+      return`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span style="color:${typeColor};font-family:var(--mono);font-size:12px;text-decoration:line-through">${e.original}</span>
           <span style="color:var(--text3)">→</span>
@@ -1201,101 +1313,80 @@ function syncAnalysisToLearning(parsed){
   }
 
   if(priority && parsed.briefing_for_next){
-    priority.textContent = '👉 ' + parsed.briefing_for_next;
-    priority.style.display = 'block';
+    priority.textContent='👉 '+parsed.briefing_for_next;
+    priority.style.display='block';
   }
 
-  // 3. 대시보드 "오늘 의식할 것" 업데이트
-  const dashList = document.getElementById('dashboard-briefing-list');
-  if(dashList && parsed.briefing_for_next){
-    const newItem = `<div class="briefing-item" style="border-color:rgba(200,185,122,.4)">
-      <span class="briefing-tag tag-amber">최근 수업</span>
-      <div class="briefing-text">${parsed.briefing_for_next}</div>
-    </div>`;
-    dashList.insertAdjacentHTML('afterbegin', newItem);
-  }
-
-  // 4. DRILLS 배열에 이번 수업 오류 기반 문제 추가 (세션 내 임시)
-  allErrors.slice(0,3).forEach(e => {
-    if(!e.original || !e.corrected) return;
-    const newDrill = {
-      korean: e.original,
-      english: e.corrected,
-      note: (e.explanation_ko||'') + ' (이번 수업에서 나온 오류)',
-      fromLesson: true,
-    };
-    // 중복 방지
-    if(!DRILLS.find(d=>d.korean===e.original)){
-      DRILLS.unshift(newDrill);
-    }
+  // 드릴 큐에 이번 수업 오류 기반 문제 추가
+  allErrors.slice(0,3).forEach(e=>{
+    if(!e.original||!e.corrected) return;
+    const newDrill={korean:e.original, english:e.corrected, note:(e.explanation_ko||'')+' (이번 수업에서 나온 오류)', fromLesson:true};
+    if(!DRILLS.find(d=>d.korean===e.original)) DRILLS.unshift(newDrill);
   });
 }
+
+// ── 저장 / 내보내기 ───────────────────────────────────
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({sessions, diaryEntries}));
+  // 총 수업 수 업데이트
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
 function exportData(){
   const blob=new Blob([JSON.stringify({sessions,diaryEntries},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='english_tracker_data.json';a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='english_tracker_data.json'; a.click();
 }
+
 function clearData(){
-  if(!confirm('모든 데이터를 초기화할까요?'))return;
-  localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(DAILY_KEY);
-  sessions=[];diaryEntries=[];renderDiaryHistory();updateStreak();toast('초기화됐어요.');
+  if(!confirm('모든 데이터를 초기화할까요?')) return;
+  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(DAILY_KEY);
+  sessions=[]; diaryEntries=[];
+  renderDiaryHistory(); updateStreak();
+  // 대시보드 초기 상태로 복원
+  document.getElementById('stat-total').textContent = BASE_SESSIONS;
+  document.getElementById('total-sessions').textContent = BASE_SESSIONS;
+  document.getElementById('dashboard-latest-lesson').style.display='none';
+  document.getElementById('recent-lesson-card').style.display='none';
+  toast('초기화됐어요.');
 }
 
 function toast(msg){
-  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),2500);
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
 }
 
-init();
-
-// ── 앱 시작 시 최근 수업 브리핑 복원 ─────────────────────
+// ── 앱 시작 시 최근 수업 복원 ────────────────────────
 function restoreRecentLesson(){
   if(!sessions.length) return;
-  const latest = sessions[0];
+  const latest=sessions[0];
   if(!latest) return;
-  // 7일 이내 수업만 복원
-  const daysDiff = (new Date() - new Date(latest.date)) / (1000*60*60*24);
-  if(daysDiff > 7) return;
+  const daysDiff=(new Date()-new Date(latest.date))/(1000*60*60*24);
+  if(daysDiff>7) return;
   syncAnalysisToLearning(latest);
+  updateDashboard(latest);
 }
 
-// ── 확장에서 넘어온 수업 데이터 자동 처리 ─────────────────
-(function handleExtensionPayload() {
-  const params = new URLSearchParams(window.location.search);
-  const raw = params.get('lesson');
-  if (!raw) return;
-
-  try {
-    const data = JSON.parse(decodeURIComponent(raw));
-    if (data.source !== 'extension') return;
-
-    // URL 파라미터 제거 (히스토리 정리)
-    window.history.replaceState({}, '', window.location.pathname);
-
-    // 자동으로 수업 분석 탭으로 이동
-    setTimeout(() => {
-      // 탭 전환
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-item,.bnav-item').forEach(n => n.classList.remove('active'));
+// ── 확장에서 넘어온 수업 데이터 처리 ─────────────────
+(function handleExtensionPayload(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=params.get('lesson');
+  if(!raw) return;
+  try{
+    const data=JSON.parse(decodeURIComponent(raw));
+    if(data.source!=='extension') return;
+    window.history.replaceState({},'',(window.location.pathname));
+    setTimeout(()=>{
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
       document.getElementById('page-upload').classList.add('active');
-
-      // 스크립트가 있으면 스크립트 탭으로
-      if (data.scriptText && data.scriptText.length > 200) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        toast('📝 스크립트 데이터가 감지됐어요. PDF 탭에서 PDF를 올려주세요.');
-      } else if (data.pdfLinks && data.pdfLinks.length > 0) {
-        // PDF 링크가 있으면 알려주기
-        toast(`📄 PDF 링크 ${data.pdfLinks.length}개 감지. 아래에서 PDF를 업로드해주세요.`);
-      }
-
-      // 날짜 정보 저장
-      console.log('[Tracker] Extension payload received:', data.date, data.pageTitle);
-    }, 300);
-
-  } catch (e) {
-    console.error('[Tracker] Failed to parse extension payload:', e);
-  }
+      toast('📝 확장에서 데이터가 왔어요. PDF를 올려주세요.');
+    },300);
+  }catch(e){console.error('[Tracker] Failed to parse extension payload:',e);}
 })();
+
+init();
 </script>
 </body>
 </html>
