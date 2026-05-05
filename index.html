@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나의 영어 성장 트래커</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="English Growth">
+<meta name="theme-color" content="#0f0f0e">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root {
   --bg:#0f0f0e;--bg2:#1a1a18;--bg3:#242422;
@@ -1387,6 +1395,15 @@ function restoreRecentLesson(){
 })();
 
 init();
+
+// ── PWA Service Worker 등록 ───────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/english/sw.js')
+      .then(reg => console.log('[PWA] SW registered:', reg.scope))
+      .catch(err => console.log('[PWA] SW failed:', err));
+  });
+}
 </script>
 </body>
 </html>
