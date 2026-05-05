@@ -379,6 +379,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="expr-item"><div class="expr-korean">I realized this area fits me</div><div class="expr-arrow">→</div><div class="expr-english">I realized I was cut out for this</div><div class="expr-note">be cut out for = ~에 적합하다.</div></div>
     <div class="expr-item"><div class="expr-korean">those efforts made the company profit</div><div class="expr-arrow">→</div><div class="expr-english">those efforts paid off / they're reaping the rewards</div><div class="expr-note">pay off / reap rewards = 노력이 결실을 맺다.</div></div>
   </div>
+  <!-- 수업 분석에서 추가된 표현 (동적) -->
+  <div id="expressions-from-lessons" style="display:none;margin-bottom:24px"></div>
+
   <div class="expr-section">
     <div class="expr-section-title">💬 캐주얼 — 동료 대화</div>
     <div class="expr-item"><div class="expr-korean">합의 도출이 매우 어렵다</div><div class="expr-arrow">→</div><div class="expr-english">like herding cats</div><div class="expr-note">이디엄: 고양이 떼를 몰듯 — 합의가 매우 어렵다.</div></div>
@@ -642,18 +645,23 @@ function updateDashboard(parsed, isRestore=false){
   document.getElementById('stat-total').textContent = totalCount;
   document.getElementById('total-sessions').textContent = totalCount;
 
-  // 2. 정체 오류 / 개선 영역 — 이번 수업 기준
-  const types = classifyErrors(allErrors);
-  const stagnant = (types.article||0) + (types.translation||0) + (types.connector||0);
-  const improving = (types.verb||0) + (types.other||0);
+  // 2. 정체 오류 / 개선 영역 — 전체 sessions 누적 기반
+  const allSessionErrors = sessions.flatMap(s => [
+    ...(s.tutor_corrections||[]),
+    ...(s.tutor_missed_errors||[]),
+    ...(s.recurring_errors_found||[]),
+    ...(s.key_errors||[]),
+  ]);
+  const typesAll = classifyErrors(allSessionErrors);
+  const stagnant = (typesAll.article||0) + (typesAll.translation||0) + (typesAll.connector||0);
+  const improving = (typesAll.verb||0) + (typesAll.other||0);
 
   if(stagnant > 0){
     document.getElementById('stat-stagnant').textContent = stagnant;
-    // sub 텍스트도 실제 내용으로
     const stagnantLabels = [];
-    if(types.article) stagnantLabels.push('관사');
-    if(types.translation) stagnantLabels.push('직역');
-    if(types.connector) stagnantLabels.push('연결어');
+    if(typesAll.article) stagnantLabels.push('관사');
+    if(typesAll.translation) stagnantLabels.push('직역');
+    if(typesAll.connector) stagnantLabels.push('연결어');
     document.getElementById('stat-stagnant-sub').textContent = stagnantLabels.join('·') || '관사·직역·연결어';
   }
 
@@ -715,39 +723,55 @@ function updateDashboard(parsed, isRestore=false){
   document.getElementById('total-sessions').textContent = totalCount;
 }
 
-// ── 수업 기록 업데이트 ────────────────────────────────
+// ── 수업 기록 전체 렌더링 ────────────────────────────
 function updateHistoryList(parsed){
+  // 새 분석 후 호출 — sessions에 이미 추가된 상태이므로 전체 재렌더링
+  renderHistoryList();
+}
+
+function renderHistoryList(){
   const list = document.getElementById('history-list');
   if(!list) return;
 
-  const allErrors = [
-    ...(parsed.tutor_corrections||[]),
-    ...(parsed.tutor_missed_errors||[]),
-    ...(parsed.recurring_errors_found||[]),
-    ...(parsed.key_errors||[]),
-  ];
+  if(!sessions.length){
+    list.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:12px 0">아직 분석된 수업이 없어요.</div>';
+    return;
+  }
 
-  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '.');
-  const topic = parsed.session_topic || '수업';
+  // 하드코딩된 초기 수업 3개 + sessions 배열 합쳐서 렌더링
+  const hardcodedHTML = `
+    <div class="timeline-item"><div class="timeline-date">2026.04.28</div><div class="timeline-content"><div class="timeline-topic">에너지 산업 / SMR 정책</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">관사 3건</span><span class="err-tag" style="color:var(--red)">safely→safety</span><span class="err-tag" style="color:var(--amber)">adjure→agile</span></div></div></div>
+    <div class="timeline-item"><div class="timeline-date">2026.04.19</div><div class="timeline-content"><div class="timeline-topic">비즈니스 컨설팅 / 직업 소개</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">직역 5건</span><span class="err-tag" style="color:var(--amber)">burdening→burden</span><span class="err-tag" style="color:var(--green)">fell into (개선)</span></div></div></div>
+    <div class="timeline-item"><div class="timeline-date">2026.04.04</div><div class="timeline-content"><div class="timeline-topic">인천 / 서울 생활</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">located on→in</span><span class="err-tag" style="color:var(--amber)">much much→significantly</span></div></div></div>
+  `;
 
-  const tags = allErrors.slice(0,3).map(e => {
-    const color = (e.type==='article'||e.type==='translation') ? 'var(--red)'
-      : (e.type==='connector'||e.type==='verb') ? 'var(--amber)'
-      : 'var(--text3)';
-    const label = e.original ? `${e.original.slice(0,12)}→${(e.corrected||'').slice(0,12)}` : '';
-    return `<span class="err-tag" style="color:${color}">${label}</span>`;
+  const sessionHTML = sessions.map(s => {
+    const allErrors = [
+      ...(s.tutor_corrections||[]),
+      ...(s.tutor_missed_errors||[]),
+      ...(s.recurring_errors_found||[]),
+      ...(s.key_errors||[]),
+    ];
+    const dateStr = (s.date||'').replace(/-/g, '.');
+    const topic = s.session_topic || '수업';
+    const tags = allErrors.slice(0,3).map(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)'
+        : (e.type==='connector'||e.type==='verb') ? 'var(--amber)'
+        : 'var(--text3)';
+      const label = e.original ? `${e.original.slice(0,12)}→${(e.corrected||'').slice(0,12)}` : '';
+      return `<span class="err-tag" style="color:${color}">${label}</span>`;
+    }).join('');
+
+    return `<div class="timeline-item" style="border-top:2px solid rgba(200,185,122,.15)">
+      <div class="timeline-date">${dateStr}</div>
+      <div class="timeline-content">
+        <div class="timeline-topic">${topic}</div>
+        <div class="timeline-errors">${tags}</div>
+      </div>
+    </div>`;
   }).join('');
 
-  const newItem = document.createElement('div');
-  newItem.className = 'timeline-item';
-  newItem.style.borderTop = '2px solid rgba(200,185,122,.2)';
-  newItem.innerHTML = `
-    <div class="timeline-date">${dateStr}</div>
-    <div class="timeline-content">
-      <div class="timeline-topic">${topic}</div>
-      <div class="timeline-errors">${tags}</div>
-    </div>`;
-  list.insertAdjacentElement('afterbegin', newItem);
+  list.innerHTML = sessionHTML + hardcodedHTML;
 }
 
 // ── 초기화 ────────────────────────────────────────────
@@ -772,6 +796,8 @@ function init(){
   shuffleDrill(); loadDrill();
   loadDailyInfo(); renderDiaryHistory(); updateStreak();
   renderWrongBank();
+  renderHistoryList();
+  renderExpressions();
   restoreRecentLesson();
 }
 
@@ -1333,6 +1359,39 @@ function syncAnalysisToLearning(parsed){
     const newDrill={korean:e.original, english:e.corrected, note:(e.explanation_ko||'')+' (이번 수업에서 나온 오류)', fromLesson:true};
     if(!DRILLS.find(d=>d.korean===e.original)) DRILLS.unshift(newDrill);
   });
+
+  // 표현 사전 업데이트 — new_expressions를 localStorage에 누적 저장
+  if(parsed.new_expressions?.length){
+    try{
+      const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+      parsed.new_expressions.forEach(ex => {
+        if(!saved.find(s=>s.expression===ex.expression)) saved.unshift({...ex, date: new Date().toISOString().slice(0,10)});
+      });
+      localStorage.setItem('eng_expressions', JSON.stringify(saved.slice(0,100)));
+    }catch(e){}
+  }
+  renderExpressions();
+}
+
+// ── 표현 사전 렌더링 ──────────────────────────────────
+function renderExpressions(){
+  const container = document.getElementById('expressions-from-lessons');
+  if(!container) return;
+  try{
+    const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+    if(!saved.length){ container.style.display='none'; return; }
+    container.style.display='block';
+    container.innerHTML = `
+      <div class="expr-section-title">📚 수업에서 추가된 표현 (${saved.length}개)</div>
+      ${saved.map(ex=>`
+        <div class="expr-item">
+          <div class="expr-english" style="color:var(--accent)">${ex.expression}</div>
+          <div class="expr-arrow">→</div>
+          <div class="expr-english">${ex.meaning_ko||''}</div>
+          <div class="expr-note">${ex.example ? '"'+ex.example+'"' : ''} ${ex.date?'· '+ex.date:''}</div>
+        </div>`).join('')}
+    `;
+  }catch(e){}
 }
 
 // ── 저장 / 내보내기 ───────────────────────────────────
@@ -1359,7 +1418,7 @@ function exportData(){
 
 function clearData(){
   if(!confirm('모든 데이터를 초기화할까요?')) return;
-  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(DAILY_KEY); localStorage.removeItem('eng_latest_lesson');
+  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(DAILY_KEY); localStorage.removeItem('eng_latest_lesson'); localStorage.removeItem('eng_expressions');
   sessions=[]; diaryEntries=[];
   renderDiaryHistory(); updateStreak();
   // 대시보드 초기 상태로 복원
