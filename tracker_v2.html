@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 영어 성장 트래커</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="English Growth">
+<meta name="theme-color" content="#0f0f0e">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root {
+  --bg:#0f0f0e;--bg2:#1a1a18;--bg3:#242422;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#e8e6df;--text2:#9a9890;--text3:#5a5856;
+  --accent:#c8b97a;--red:#c96a5a;--amber:#c8895a;
+  --green:#8fa86e;--teal:#6aa8a0;--purple:#8a7ab8;
+  --serif:'DM Serif Display',Georgia,serif;
+  --mono:'DM Mono',monospace;
+  --sans:'Pretendard',-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;}
+
+.shell{display:flex;min-height:100vh;}
+.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);padding:28px 0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;}
+.main{flex:1;padding:32px 36px;max-width:900px;overflow-x:hidden;}
+.bottom-nav{display:none;}
+
+@media(max-width:680px){
+  .shell{flex-direction:column;}
+  .sidebar{display:none;}
+  .main{padding:20px 16px 80px;max-width:100%;}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg2);border-top:1px solid var(--border);z-index:100;}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;transition:color .15s;border:none;background:none;padding:0;}
+  .bnav-item.active{color:var(--accent);}
+  .bnav-icon{width:20px;height:20px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .page-title{font-size:24px;}
+}
+
+.logo{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.logo-title{font-family:var(--serif);font-size:18px;color:var(--accent);line-height:1.2;}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;border:none;border-left:2px solid transparent;background:none;width:100%;text-align:left;}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--accent);border-left:2px solid var(--accent);background:rgba(200,185,122,.06);}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon{opacity:1;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--border);}
+.api-status{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.api-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text3);margin-right:6px;}
+.api-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
+
+.page{display:none;}
+.page.active{display:block;}
+.page-header{margin-bottom:28px;}
+.page-title{font-family:var(--serif);font-size:32px;color:var(--text);line-height:1.1;}
+.page-subtitle{color:var(--text2);font-size:13px;margin-top:6px;}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.stat-value{font-family:var(--serif);font-size:28px;color:var(--accent);line-height:1;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+
+.error-list{display:flex;flex-direction:column;gap:14px;}
+.error-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.error-name{font-size:13px;color:var(--text);}
+.bar-bg{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.error-trend{font-size:11px;color:var(--text3);margin-top:4px;}
+
+.briefing-item{padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
+.briefing-tag{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;margin-bottom:8px;}
+.tag-red{background:rgba(201,106,90,.15);color:var(--red);}
+.tag-amber{background:rgba(200,137,90,.15);color:var(--amber);}
+.tag-green{background:rgba(143,168,110,.15);color:var(--green);}
+.tag-purple{background:rgba(138,122,184,.15);color:var(--purple);}
+.tag-teal{background:rgba(106,168,160,.15);color:var(--teal);}
+.briefing-text{font-size:13px;color:var(--text);line-height:1.5;}
+
+.expr-section{margin-bottom:24px;}
+.expr-section-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+.expr-item{display:grid;grid-template-columns:1fr 16px 1fr;align-items:start;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+.expr-korean{color:var(--red);font-size:13px;}
+.expr-arrow{color:var(--text3);text-align:center;font-size:12px;padding-top:2px;}
+.expr-english{color:var(--green);font-size:13px;}
+.expr-note{grid-column:1/-1;font-size:11px;color:var(--text3);padding-top:6px;border-top:1px solid var(--border);margin-top:4px;}
+
+.drill-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.drill-prompt-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;}
+.drill-korean{font-family:var(--serif);font-size:22px;color:var(--text);margin-bottom:20px;line-height:1.4;}
+.drill-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--sans);font-size:15px;transition:border-color .15s;margin-bottom:12px;}
+.drill-input:focus{outline:none;border-color:var(--accent);}
+.drill-input.correct{border-color:var(--green);background:rgba(143,168,110,.08);}
+.drill-input.wrong{border-color:var(--red);background:rgba(201,106,90,.08);}
+.drill-feedback{font-size:13px;line-height:1.6;padding:12px 14px;border-radius:8px;margin-bottom:12px;display:none;}
+.drill-feedback.correct{background:rgba(143,168,110,.1);color:var(--green);border:1px solid rgba(143,168,110,.3);}
+.drill-feedback.wrong{background:rgba(201,106,90,.1);color:var(--red);border:1px solid rgba(201,106,90,.3);}
+.drill-model{font-size:13px;color:var(--green);margin-top:8px;display:none;line-height:1.6;}
+.drill-note{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono);line-height:1.5;display:none;}
+.drill-controls{display:flex;gap:10px;flex-wrap:wrap;}
+.drill-progress{font-size:11px;font-family:var(--mono);color:var(--text3);text-align:center;margin-bottom:16px;}
+
+.sentence-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:16px;position:relative;overflow:hidden;}
+.sentence-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--teal));}
+.sentence-date{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;}
+.sentence-type{display:inline-block;font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;margin-bottom:14px;}
+.sentence-english{font-family:var(--serif);font-size:20px;color:var(--text);line-height:1.5;margin-bottom:12px;}
+.sentence-korean{font-size:13px;color:var(--text2);margin-bottom:10px;}
+.sentence-note{font-size:12px;color:var(--text3);padding:10px 12px;background:var(--bg3);border-radius:8px;line-height:1.5;}
+.diary-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;min-height:80px;margin-top:12px;transition:border-color .15s;}
+.diary-area:focus{outline:none;border-color:var(--accent);}
+.diary-feedback{font-size:13px;color:var(--green);margin-top:10px;display:none;line-height:1.6;padding:12px;background:rgba(143,168,110,.08);border-radius:8px;border-left:3px solid var(--green);}
+
+.tab-row{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.tab-btn{flex:1;padding:10px 8px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--sans);}
+.tab-btn:last-child{border-right:none;}
+.tab-btn.active{background:var(--bg3);color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.upload-zone{border:1px dashed var(--border2);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);margin-bottom:16px;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(200,185,122,.04);}
+.upload-icon{font-size:28px;margin-bottom:10px;opacity:.5;}
+.upload-text{color:var(--text2);font-size:13px;}
+.upload-hint{color:var(--text3);font-size:11px;margin-top:4px;font-family:var(--mono);}
+
+.analysis-result{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px;display:none;}
+.analysis-result.visible{display:block;}
+.analysis-chunk{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.analysis-chunk:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.chunk-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+
+.timeline-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;border-radius:4px;}
+.timeline-item:hover{background:rgba(255,255,255,.03);}
+.timeline-item:last-child{border-bottom:none;}
+.timeline-date{font-size:11px;font-family:var(--mono);color:var(--text3);width:70px;flex-shrink:0;padding-top:2px;}
+.timeline-content{flex:1;}
+.timeline-topic{font-size:13px;color:var(--text);margin-bottom:5px;}
+.timeline-errors{display:flex;gap:6px;flex-wrap:wrap;}
+.err-tag{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--text3);}
+
+.input-group{margin-bottom:14px;}
+.input-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.06em;}
+.input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:13px;transition:border-color .15s;}
+.input:focus{outline:none;border-color:var(--accent);}
+.textarea{resize:vertical;min-height:100px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--text);}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600;}
+.btn-primary:hover{background:#d4c68a;color:var(--bg);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.loading{display:inline-flex;align-items:center;gap:8px;color:var(--text3);font-size:12px;font-family:var(--mono);}
+.spinner{width:14px;height:14px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.settings-section{margin-bottom:28px;}
+.settings-title{font-size:13px;color:var(--text);font-weight:500;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+
+.toast{position:fixed;bottom:72px;right:16px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:999;max-width:280px;}
+.toast.show{opacity:1;transform:translateY(0);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title">English<br>Growth</div>
+    <div class="logo-sub">// Yejeong's tracker</div>
+  </div>
+  <button class="nav-item active" onclick="nav('dashboard',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    대시보드
+  </button>
+  <button class="nav-item" onclick="nav('daily',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14"/></svg>
+    오늘의 문장
+  </button>
+  <button class="nav-item" onclick="nav('briefing',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10,10"/></svg>
+    수업 전 브리핑
+  </button>
+  <button class="nav-item" onclick="nav('expressions',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+    표현 사전
+  </button>
+  <button class="nav-item" onclick="nav('drill',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3 3 7-7"/></svg>
+    드릴 연습
+  </button>
+  <button class="nav-item" onclick="nav('upload',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3m0 0L5 6m3-3l3 3"/><path d="M3 13h10"/></svg>
+    수업 분석
+  </button>
+  <button class="nav-item" onclick="nav('history',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,4 8,8 6,10"/></svg>
+    수업 기록
+  </button>
+  <button class="nav-item" onclick="nav('settings',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+    설정
+  </button>
+  <div class="sidebar-bottom">
+    <div class="api-status"><span class="api-dot" id="api-dot"></span><span id="api-status-text">API 미연결</span></div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-title">나의 영어 성장</div>
+    <div class="page-subtitle" id="dashboard-subtitle">29회 수업 분석 기반 · 2024.12 – 2026.04</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">총 수업</div>
+      <div class="stat-value" id="stat-total">29</div>
+      <div class="stat-sub" id="stat-total-sub">17개월간</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">정체 오류</div>
+      <div class="stat-value" id="stat-stagnant" style="color:var(--red)">3</div>
+      <div class="stat-sub" id="stat-stagnant-sub">관사·직역·연결어</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">개선 영역</div>
+      <div class="stat-value" id="stat-improving" style="color:var(--green)">2</div>
+      <div class="stat-sub" id="stat-improving-sub">어휘·논리구조</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">일기 연속</div>
+      <div class="stat-value" id="streak-val" style="color:var(--accent)">0</div>
+      <div class="stat-sub">일 연속</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">반복 오류 Top 5</div>
+      <div class="error-list" id="dashboard-error-list">
+        <div><div class="error-header"><span class="error-name">관사 / 단수복수</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">매 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:92%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
+        <div><div class="error-header"><span class="error-name">한국식 직역</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">핵심 병목</span></div><div class="bar-bg"><div class="bar-fill" style="width:80%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
+        <div><div class="error-header"><span class="error-name">연결어 부족</span><span style="font-size:11px;font-family:var(--mono);color:var(--amber)">so···so</span></div><div class="bar-bg"><div class="bar-fill" style="width:72%;background:var(--amber)"></div></div><div class="error-trend">↑ 소폭 개선</div></div>
+        <div><div class="error-header"><span class="error-name">동사 선택</span><span style="font-size:11px;font-family:var(--mono);color:var(--amber)">뉘앙스</span></div><div class="bar-bg"><div class="bar-fill" style="width:52%;background:var(--amber)"></div></div><div class="error-trend">↑ 개선 중</div></div>
+        <div><div class="error-header"><span class="error-name">어휘 다양성</span><span style="font-size:11px;font-family:var(--mono);color:var(--green)">성장</span></div><div class="bar-bg"><div class="bar-fill" style="width:28%;background:var(--green)"></div></div><div class="error-trend">↑↑ 뚜렷한 성장</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">오늘 의식할 것</div>
+      <!-- 분석 후 자동으로 맨 위에 추가됨 -->
+      <div id="dashboard-briefing-list">
+        <div class="briefing-item" style="border-color:rgba(201,106,90,.3)"><span class="briefing-tag tag-red">관사</span><div class="briefing-text">"The pros <strong>are</strong>" — 복수 주어엔 복수 동사</div></div>
+        <div class="briefing-item" style="border-color:rgba(200,137,90,.3)"><span class="briefing-tag tag-amber">연결어</span><div class="briefing-text">so 연발 → <strong>while / that said / on top of that</strong></div></div>
+        <div class="briefing-item" style="border-color:rgba(143,168,110,.3)"><span class="briefing-tag tag-green">표현</span><div class="briefing-text">"I have passion to" → <strong>"I'm passionate about"</strong></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- 최근 수업 요약 (분석 후 표시) -->
+  <div id="dashboard-latest-lesson" style="display:none">
+    <div class="card" style="border-color:rgba(200,185,122,.25)">
+      <div class="card-title" style="color:var(--accent)">📊 최근 수업 분석 결과</div>
+      <div id="dashboard-latest-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY SENTENCE -->
+<div class="page" id="page-daily">
+  <div class="page-header">
+    <div class="page-title">오늘의 문장</div>
+    <div class="page-subtitle" id="daily-date-sub">매일 하나씩, 나에게 맞춘 표현</div>
+  </div>
+  <div class="sentence-card">
+    <div class="sentence-date" id="s-date"></div>
+    <div><span class="sentence-type briefing-tag" id="s-type-badge"></span></div>
+    <div class="sentence-english" id="s-english">—</div>
+    <div class="sentence-korean" id="s-korean"></div>
+    <div class="sentence-note" id="s-note"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="generateDailySentence()" id="gen-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg>
+      새 문장 생성
+    </button>
+    <button class="btn" onclick="saveDiaryEntry()">일기에 저장</button>
+  </div>
+  <div class="card">
+    <div class="card-title">이 문장으로 일기 한 줄 써보기</div>
+    <textarea class="diary-area" id="diary-input" placeholder="이 표현을 응용해서 오늘 있었던 일을 영어로 한 줄 써보세요..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn" onclick="checkDiary()">피드백 받기</button>
+      <div id="diary-loading" style="display:none"><div class="loading"><div class="spinner"></div>확인 중...</div></div>
+    </div>
+    <div class="diary-feedback" id="diary-feedback"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">최근 일기 기록</div>
+    <div id="diary-history-list" style="font-size:13px;color:var(--text3)">아직 저장된 일기가 없어요.</div>
+  </div>
+</div>
+
+<!-- BRIEFING -->
+<div class="page" id="page-briefing">
+  <div class="page-header">
+    <div class="page-title">수업 전 브리핑</div>
+    <div class="page-subtitle">오늘 Ringle 수업에서 의식할 포인트</div>
+  </div>
+
+  <div class="card" id="recent-lesson-card" style="display:none;border-color:rgba(200,185,122,.3)">
+    <div class="card-title" style="color:var(--accent)">⚡ 최근 수업에서 나온 오류</div>
+    <div id="recent-lesson-errors"></div>
+    <div id="recent-lesson-priority" style="font-size:13px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent);margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔴 반드시 고칠 것 — 관사 / 단수복수</div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">복수 동사</span><div class="briefing-text">"The pros <strong>are</strong>" ✓ &nbsp;·&nbsp; "The pros is" ✗</div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">불가산 명사</span><div class="briefing-text"><strong>expertise, knowledge, feedback, advice</strong> — a/s 붙이지 않기</div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">every/each</span><div class="briefing-text"><strong>"every item"</strong> ✓ &nbsp;·&nbsp; "every items" ✗</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🟡 시도할 것 — 연결어 다양화</div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">대조</span><div class="briefing-text"><strong>while / whereas / that said / on the flip side</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">인과</span><div class="briefing-text"><strong>as a result / which means / consequently</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">결론</span><div class="briefing-text"><strong>all things considered / the bottom line is / at the end of the day</strong></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🟢 써볼 표현</div>
+    <div class="briefing-item"><span class="briefing-tag tag-green">직역 교체</span><div class="briefing-text">"I have passion to ~" → <strong>"I'm passionate about ~"</strong><br>"It is burdening" → <strong>"It weighs on me"</strong><br>"I happened to get into" → <strong>"I fell into"</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-purple">MBA 표현</span><div class="briefing-text"><strong>strike a balance / reaping the rewards / I concur / wear many hats</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-teal">캐주얼</span><div class="briefing-text"><strong>I'm in the same boat / from the get-go / herding cats / here's the thing</strong></div></div>
+  </div>
+</div>
+
+<!-- EXPRESSIONS -->
+<div class="page" id="page-expressions">
+  <div class="page-header">
+    <div class="page-title">표현 사전</div>
+    <div class="page-subtitle">실제 수업에서 추출한 한국식 → 자연스러운 영어</div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🔴 구조 직역</div>
+    <div class="expr-item"><div class="expr-korean">starting point making me interested</div><div class="expr-arrow">→</div><div class="expr-english">what sparked my interest / what got me into</div><div class="expr-note">한국어 '계기가 된 것' 직역. 영어는 동사 중심.</div></div>
+    <div class="expr-item"><div class="expr-korean">I have passion to ~</div><div class="expr-arrow">→</div><div class="expr-english">I'm passionate about ~ / I've always had a thing for ~</div><div class="expr-note">passion은 명사. 'have passion to V' 구조는 어색.</div></div>
+    <div class="expr-item"><div class="expr-korean">what makes me hard is</div><div class="expr-arrow">→</div><div class="expr-english">what I find challenging is / the tough part for me is</div><div class="expr-note">'나를 힘들게 하는 것' → 영어는 주어가 I.</div></div>
+    <div class="expr-item"><div class="expr-korean">It is very burdening</div><div class="expr-arrow">→</div><div class="expr-english">It's a heavy burden / it weighs on me</div><div class="expr-note">burdening은 형용사로 거의 안 씀.</div></div>
+    <div class="expr-item"><div class="expr-korean">I happened to get into this job</div><div class="expr-arrow">→</div><div class="expr-english">I fell into this job / I stumbled into it</div><div class="expr-note">우연히 ~하게 됐다 = fall into / stumble into</div></div>
+    <div class="expr-item"><div class="expr-korean">sorted put</div><div class="expr-arrow">→</div><div class="expr-english">sorted out / addressed / ironed out</div><div class="expr-note">'sorted put'은 없는 표현. sorted out이 맞음.</div></div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🟡 동사 선택</div>
+    <div class="expr-item"><div class="expr-korean">dealing with the project (부정적 뉘앙스 없을 때)</div><div class="expr-arrow">→</div><div class="expr-english">working on / handling</div><div class="expr-note">deal with = 부정적 함의. 싫지 않은 일엔 work on.</div></div>
+    <div class="expr-item"><div class="expr-korean">composed of (과다 사용)</div><div class="expr-arrow">→</div><div class="expr-english">consists of / is made up of / comprises</div><div class="expr-note">다양하게 섞어서 쓰기.</div></div>
+    <div class="expr-item"><div class="expr-korean">pick up one company (선택하다)</div><div class="expr-arrow">→</div><div class="expr-english">selects / backs / supports / chooses to fund</div><div class="expr-note">pick up은 물건 집을 때.</div></div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🟢 비즈니스 / MBA</div>
+    <div class="expr-item"><div class="expr-korean">agree with you</div><div class="expr-arrow">→</div><div class="expr-english">I concur / I second that / I'm with you on that</div><div class="expr-note">비즈니스 세팅에서 더 세련됨.</div></div>
+    <div class="expr-item"><div class="expr-korean">That's the same for me</div><div class="expr-arrow">→</div><div class="expr-english">Likewise / I'm in the same boat / Same here</div><div class="expr-note">캐주얼 동조 표현.</div></div>
+    <div class="expr-item"><div class="expr-korean">I realized this area fits me</div><div class="expr-arrow">→</div><div class="expr-english">I realized I was cut out for this</div><div class="expr-note">be cut out for = ~에 적합하다.</div></div>
+    <div class="expr-item"><div class="expr-korean">those efforts made the company profit</div><div class="expr-arrow">→</div><div class="expr-english">those efforts paid off / they're reaping the rewards</div><div class="expr-note">pay off / reap rewards = 노력이 결실을 맺다.</div></div>
+  </div>
+  <!-- 수업 분석에서 추가된 표현 (동적) -->
+  <div id="expressions-from-lessons" style="display:none;margin-bottom:24px"></div>
+
+  <div class="expr-section">
+    <div class="expr-section-title">💬 캐주얼 — 동료 대화</div>
+    <div class="expr-item"><div class="expr-korean">합의 도출이 매우 어렵다</div><div class="expr-arrow">→</div><div class="expr-english">like herding cats</div><div class="expr-note">이디엄: 고양이 떼를 몰듯 — 합의가 매우 어렵다.</div></div>
+    <div class="expr-item"><div class="expr-korean">처음부터</div><div class="expr-arrow">→</div><div class="expr-english">from the get-go</div><div class="expr-note">캐주얼. "from the beginning"의 구어체.</div></div>
+    <div class="expr-item"><div class="expr-korean">나도 똑같은 상황이야</div><div class="expr-arrow">→</div><div class="expr-english">I'm in the same boat</div><div class="expr-note">공감 표현.</div></div>
+    <div class="expr-item"><div class="expr-korean">그게 바로 문제야</div><div class="expr-arrow">→</div><div class="expr-english">that's the thing / here's the thing</div><div class="expr-note">요점 강조할 때.</div></div>
+    <div class="expr-item"><div class="expr-korean">정신이 없다</div><div class="expr-arrow">→</div><div class="expr-english">I'm all over the place</div><div class="expr-note">바쁘고 정신없는 상태.</div></div>
+    <div class="expr-item"><div class="expr-korean">좀 쉬고 싶다</div><div class="expr-arrow">→</div><div class="expr-english">I could use a breather</div><div class="expr-note">'I need a break'의 자연스러운 대체.</div></div>
+  </div>
+</div>
+
+<!-- DRILL -->
+<div class="page" id="page-drill">
+  <div class="page-header">
+    <div class="page-title">드릴 연습</div>
+    <div class="page-subtitle">직접 영어로 입력하고 Claude가 채점</div>
+  </div>
+
+  <div class="drill-progress" id="drill-progress">1 / 15</div>
+
+  <div class="drill-card" id="drill-card">
+    <div class="drill-prompt-label">이 표현을 자연스러운 영어로 써보세요</div>
+    <div class="drill-korean" id="drill-korean">로딩 중...</div>
+    <input class="drill-input" id="drill-input" type="text" placeholder="영어로 입력..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="drill-feedback" id="drill-feedback"></div>
+    <div class="drill-model" id="drill-model"></div>
+    <div class="drill-note" id="drill-note"></div>
+  </div>
+
+  <div class="drill-controls">
+    <button class="btn btn-primary" id="drill-submit-btn" onclick="submitDrill()">제출</button>
+    <button class="btn" id="drill-next-btn" onclick="nextDrill()" style="display:none">다음 →</button>
+    <button class="btn" id="drill-skip-btn" onclick="skipDrill()" style="color:var(--text3)">건너뛰기</button>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">세션 현황</div>
+    <div style="display:flex;gap:24px;font-size:13px;margin-bottom:12px">
+      <span style="color:var(--green)">✓ 맞음: <strong id="drill-correct">0</strong></span>
+      <span style="color:var(--red)">✗ 틀림: <strong id="drill-wrong">0</strong></span>
+      <span style="color:var(--text3)">남음: <strong id="drill-remaining">15</strong></span>
+    </div>
+    <div id="drill-wrongs-preview" style="display:none">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">이번 세션 오답</div>
+      <div id="drill-wrongs-list"></div>
+    </div>
+  </div>
+
+  <div class="card" id="drill-wrong-bank" style="display:none">
+    <div class="card-title">📚 누적 오답 — 다음 수업 인풋</div>
+    <div id="drill-wrong-bank-list"></div>
+    <button class="btn" id="clear-wrongs-btn" onclick="clearWrongBank()" style="margin-top:12px;color:var(--red);border-color:rgba(201,106,90,.3);font-size:12px">오답 초기화</button>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="page" id="page-upload">
+  <div class="page-header">
+    <div class="page-title">수업 분석</div>
+    <div class="page-subtitle">PDF · 스크립트 · 미팅 메모 분석</div>
+  </div>
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('pdf',this)">📄 PDF 분석</button>
+    <button class="tab-btn" onclick="switchTab('memo',this)">💬 미팅 메모</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-pdf">
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">
+      수업 PDF 두 개를 올려주세요. <strong style="color:var(--text2)">피드백 문서 + 스크립트</strong>를 함께 분석해서 튜터가 지적한 것과 놓친 것을 모두 잡아드릴게요.
+    </p>
+
+    <div class="upload-zone" id="zone-feedback"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropDual(event,'feedback')"
+         onclick="document.getElementById('file-feedback').click()">
+      <div class="upload-icon" id="icon-feedback">📝</div>
+      <div class="upload-text" id="text-feedback">튜터 피드백 문서 PDF</div>
+      <div class="upload-hint" id="hint-feedback">Tutor's Editing Place가 있는 문서</div>
+      <input type="file" id="file-feedback" accept=".pdf" style="display:none" onchange="loadDualFile(this.files[0],'feedback')">
+    </div>
+
+    <div class="upload-zone" id="zone-script" style="margin-top:10px"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropDual(event,'script')"
+         onclick="document.getElementById('file-script').click()">
+      <div class="upload-icon" id="icon-script">🎙</div>
+      <div class="upload-text" id="text-script">수업 스크립트 PDF</div>
+      <div class="upload-hint" id="hint-script">녹음 트랜스크립트 문서 (선택)</div>
+      <input type="file" id="file-script" accept=".pdf" style="display:none" onchange="loadDualFile(this.files[0],'script')">
+    </div>
+
+    <button class="btn btn-primary" id="analyze-dual-btn" onclick="analyzeDualPDF()" style="margin-top:14px;width:100%" disabled>
+      두 PDF 합쳐서 분석하기
+    </button>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;font-family:var(--mono)">
+      피드백 문서만 있어도 분석 가능 · 스크립트는 선택
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-memo">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">미팅 / 대화 메모</div>
+      <div class="input-group">
+        <label class="input-label">내가 쓴 표현 (어색했던 것 위주)</label>
+        <textarea class="input textarea" id="memo-input" placeholder="예: I have passion to develop my career in energy sector..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="analyzeMemo()">분석하기</button>
+    </div>
+  </div>
+
+  <div id="analyze-loading" style="display:none;margin-top:16px"><div class="loading"><div class="spinner"></div>Claude가 분석 중입니다...</div></div>
+  <div id="analysis-result" class="analysis-result">
+    <div class="card-title" id="result-title" style="margin-bottom:14px">분석 결과</div>
+    <div id="result-content"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div class="page-title">수업 기록</div>
+    <div class="page-subtitle" id="history-subtitle">분석된 수업 타임라인</div>
+  </div>
+  <div class="card">
+    <div class="card-title">전체 수업 기록</div>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- 수업 상세 모달 -->
+<div id="lesson-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);overflow-y:auto;" onclick="if(event.target===this)closeLessonModal()">
+  <div style="max-width:680px;margin:40px auto;padding:0 16px 80px;">
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;overflow:hidden;">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-family:var(--serif);font-size:22px;color:var(--text)" id="modal-title">—</div>
+          <div style="font-size:12px;font-family:var(--mono);color:var(--text3);margin-top:4px" id="modal-date">—</div>
+        </div>
+        <button onclick="closeLessonModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
+      </div>
+      <div style="padding:20px 24px;" id="modal-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div class="page-title">설정</div>
+    <div class="page-subtitle">API 연결 및 앱 설정</div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Claude API 키</div>
+    <div class="input-group">
+      <label class="input-label">Anthropic API Key</label>
+      <input type="password" class="input" id="api-key-input" placeholder="sk-ant-...">
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="saveApiKey()">저장</button>
+      <button class="btn" onclick="testApiKey()">연결 테스트</button>
+      <div id="key-status" style="font-size:12px;font-family:var(--mono);color:var(--text3)"></div>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--text3);line-height:1.7">
+      API 키는 이 브라우저에만 저장됩니다.<br>
+      발급: <a href="https://console.anthropic.com" style="color:var(--accent)">console.anthropic.com</a><br>
+      분석 1회 비용 ≈ ₩5~15
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">데이터 관리</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="exportData()">데이터 내보내기</button>
+      <button class="btn" onclick="clearData()" style="color:var(--red);border-color:rgba(201,106,90,.3)">초기화</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">앱 정보</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.8;font-family:var(--mono)">
+      버전: 1.2.0<br>모델: claude-sonnet-4-6<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="nav('dashboard',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>홈
+  </button>
+  <button class="bnav-item" onclick="nav('daily',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2v16M2 10h16"/></svg>오늘
+  </button>
+  <button class="bnav-item" onclick="nav('drill',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 10l4 4 8-8"/></svg>드릴
+  </button>
+  <button class="bnav-item" onclick="nav('upload',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5m0 0L7 8m3-3l3 3"/><path d="M4 16h12"/></svg>분석
+  </button>
+  <button class="bnav-item" onclick="nav('settings',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2"/></svg>설정
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY='eng_v2', API_KEY_S='eng_api_key', DAILY_KEY='eng_daily';
+const BASE_SESSIONS = 29; // 앱 초기 기준 수업 수
+
+let apiKey='', sessions=[], diaryEntries=[];
+let drillCorrect=0, drillWrong=0, drillIndex=0, drillAnswered=false, drillQueue=[];
+let drillWrongBank=[];
+
+const SENTENCE_POOL=[
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"I fell into consulting, and it turned out I was completely cut out for it.",korean:"나는 우연히 컨설팅을 시작하게 됐고, 알고 보니 완전히 적성에 맞았어.",note:"'fell into' = 우연히 ~하게 됐다. 내가 자주 쓰던 'happened to get into'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"What I find most challenging is managing the complex dynamics between our team and the client.",korean:"내가 가장 어렵다고 느끼는 건 팀과 클라이언트 사이의 복잡한 역학관계를 관리하는 거야.",note:"'What I find challenging' — 내가 자주 쓰던 'what makes me hard is'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"The advantages are that each side brings its own expertise.",korean:"각 측이 고유한 전문성을 가져온다는 게 장점이야.",note:"'The advantages are' — 복수 주어엔 복수 동사. 'The pros is' 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"I'm passionate about working in the energy sector and exploring its global dynamics.",korean:"나는 에너지 섹터에서 일하고 그 글로벌 역학을 탐구하는 것에 열정을 갖고 있어.",note:"'I'm passionate about' — 내가 쓰던 'I have passion to'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"It weighs on me that every stakeholder has a different take on the project.",korean:"모든 이해관계자가 프로젝트에 대해 다른 시각을 갖고 있다는 게 부담스러워.",note:"'It weighs on me' — 내가 썼던 'it is very burdening'의 교정."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"We need to strike a balance between moving fast and making sure the process is airtight.",korean:"빠르게 움직이는 것과 프로세스를 철저히 하는 것 사이의 균형을 잡아야 해.",note:"'strike a balance' — MBA 인터뷰에서도 자주 쓰이는 표현."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"I concur — the regulatory environment is going to be the biggest bottleneck here.",korean:"동의해 — 규제 환경이 여기서 가장 큰 병목이 될 거야.",note:"'I concur' — 'I agree'보다 격식 있고 세련된 표현."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"In my role, I have to wear many hats — strategy, client management, and market research.",korean:"내 역할에서는 전략, 클라이언트 관리, 시장 조사까지 다양한 역할을 해야 해.",note:"'wear many hats' — 여러 역할을 담당한다는 뜻."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"Those late nights are finally paying off — the client loved the presentation.",korean:"그 밤샘 작업들이 드디어 결실을 맺었어 — 클라이언트가 발표를 엄청 좋아했어.",note:"'paying off' — 노력이 결실을 맺다."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"The bottom line is that without government backing, the SMR rollout will take twice as long.",korean:"결론적으로 정부 지원 없이는 SMR 도입이 두 배는 오래 걸릴 거야.",note:"'the bottom line is' — 결론을 내릴 때."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Getting all the stakeholders to agree was like herding cats — total chaos.",korean:"모든 이해관계자들 동의시키는 게 정말 난장판이었어.",note:"'herding cats' = 합의 도출이 매우 어렵다."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"I'm in the same boat — my schedule has been absolutely crazy this week.",korean:"나도 완전 똑같아 — 이번 주 스케줄이 미칠 것 같았어.",note:"'I'm in the same boat' — 같은 상황이야."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Here's the thing — I actually enjoy the chaos once I'm in the middle of it.",korean:"있잖아 — 사실 한가운데에 있으면 그 혼란이 재밌거든.",note:"'here's the thing' — 요점을 꺼낼 때."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"I've been all over the place lately — work, MBA prep, and trying to have a life.",korean:"요즘 너무 정신없어 — 일, MBA 준비, 그리고 나만의 시간도 만들어보려고.",note:"'all over the place' = 정신없다."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"From the get-go, I knew this project was going to be way more complex than it looked.",korean:"처음부터 이 프로젝트가 보이는 것보다 훨씬 복잡할 거라는 걸 알았어.",note:"'from the get-go' = 처음부터."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Honestly, I could use a breather — it's been non-stop for the past month.",korean:"솔직히 좀 쉬고 싶어 — 지난 한 달이 쉬지 않고 달려온 거야.",note:"'could use a breather' = 좀 쉬고 싶다."},
+];
+
+const DRILLS=[
+  {korean:"starting point making me interested in music",english:"what sparked my interest in music / what got me into music",note:"한국어 '계기가 된 것' 구조 직역. 영어는 동사 중심으로."},
+  {korean:"I have passion to develop my career",english:"I'm passionate about developing my career",note:"passion은 명사. 'have passion to V' 구조는 어색함."},
+  {korean:"what makes me hard is the complicated dynamics",english:"what I find challenging is the complicated dynamics",note:"'나를 힘들게 하는 것' → 영어는 주어가 I인 구조."},
+  {korean:"It is very burdening to manage multiple stakeholders",english:"It's a heavy burden / It weighs on me",note:"burdening은 형용사로 거의 쓰이지 않음."},
+  {korean:"I happened to get into consulting",english:"I fell into consulting / I stumbled into consulting",note:"우연히 ~하게 됐다 = fall into / stumble into"},
+  {korean:"The pros is they have their own expertise",english:"One advantage is that they have their own expertise",note:"복수 주어 pros는 복수 동사. 단수로 쓸 땐 'one advantage'."},
+  {korean:"dealing with an energy project (부정적 뉘앙스 없을 때)",english:"working on an energy project / handling an energy project",note:"deal with는 부정적 뉘앙스. 싫지 않은 일엔 work on."},
+  {korean:"That's the same for me",english:"Likewise / I'm in the same boat / Same here",note:"캐주얼 대화에서 자연스러운 동조 표현."},
+  {korean:"agree with you on this point",english:"I concur / I second that / I'm with you on that",note:"비즈니스 세팅에서 agree 대신 쓰면 더 세련됨."},
+  {korean:"my clients are across many industries",english:"I wear many hats / I work across diverse sectors",note:"wear many hats = 다양한 역할을 담당하다."},
+  {korean:"I realized this area fits me well",english:"I realized I was cut out for this kind of work",note:"be cut out for = ~에 적합하다."},
+  {korean:"those efforts will make the company profit",english:"those efforts appear to be paying off / reaping the rewards",note:"pay off / reap rewards = 노력이 결실을 맺다."},
+  {korean:"this issue could be sorted put",english:"this issue could be sorted out / addressed / ironed out",note:"'sorted put'은 없는 표현. sorted out이 맞음."},
+  {korean:"it is not that realized yet (기술이)",english:"it hasn't taken off yet / it's still in its early stages",note:"realize는 '깨닫다' 뜻. 기술 실현은 다른 표현."},
+  {korean:"I don't have enough brain ability",english:"I don't have the bandwidth / my brain is just fried",note:"brain ability는 어색. bandwidth(여유) 또는 capacity."},
+];
+
+// ── 에러 타입 분류 헬퍼 ────────────────────────────────
+function classifyErrors(errors){
+  const types = {article:0, translation:0, connector:0, verb:0, other:0};
+  (errors||[]).forEach(e => {
+    const t = (e.type||'other').toLowerCase();
+    if(types[t] !== undefined) types[t]++;
+    else types.other++;
+  });
+  return types;
+}
+
+// ── 대시보드 업데이트 ─────────────────────────────────
+function updateDashboard(parsed, isRestore=false){
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  // 1. 총 수업 수
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  // 2. 정체 오류 / 개선 영역 — 전체 sessions 누적 기반
+  const allSessionErrors = sessions.flatMap(s => [
+    ...(s.tutor_corrections||[]),
+    ...(s.tutor_missed_errors||[]),
+    ...(s.recurring_errors_found||[]),
+    ...(s.key_errors||[]),
+  ]);
+  const typesAll = classifyErrors(allSessionErrors);
+  const stagnant = (typesAll.article||0) + (typesAll.translation||0) + (typesAll.connector||0);
+  const improving = (typesAll.verb||0) + (typesAll.other||0);
+
+  if(stagnant > 0){
+    document.getElementById('stat-stagnant').textContent = stagnant;
+    const stagnantLabels = [];
+    if(typesAll.article) stagnantLabels.push('관사');
+    if(typesAll.translation) stagnantLabels.push('직역');
+    if(typesAll.connector) stagnantLabels.push('연결어');
+    document.getElementById('stat-stagnant-sub').textContent = stagnantLabels.join('·') || '관사·직역·연결어';
+  }
+
+  if(improving > 0){
+    document.getElementById('stat-improving').textContent = improving;
+  }
+
+  // 3. "오늘 의식할 것" — 최근 수업 과제를 맨 위에 삽입
+  const briefingList = document.getElementById('dashboard-briefing-list');
+  if(parsed.briefing_for_next && briefingList){
+    // 이전에 추가된 최근 수업 아이템이 있으면 제거
+    const existing = briefingList.querySelector('.from-lesson');
+    if(existing) existing.remove();
+
+    const newItem = document.createElement('div');
+    newItem.className = 'briefing-item from-lesson';
+    newItem.style.cssText = 'border-color:rgba(200,185,122,.4);order:-1;';
+    newItem.innerHTML = `<span class="briefing-tag tag-amber">최근 수업</span><div class="briefing-text">${parsed.briefing_for_next}</div>`;
+    briefingList.insertAdjacentElement('afterbegin', newItem);
+  }
+
+  // 4. 대시보드 "반복 오류" — 이번 수업 오류가 있으면 상위에 추가
+  if(allErrors.length > 0){
+    const errorList = document.getElementById('dashboard-error-list');
+    // 이전 것 제거
+    errorList.querySelectorAll('.from-lesson').forEach(el => el.remove());
+
+    allErrors.slice(0, 2).forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'from-lesson';
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      div.innerHTML = `<div class="error-header"><span class="error-name">${e.original||''}</span><span style="font-size:11px;font-family:var(--mono);color:${color}">이번 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:85%;background:${color}"></div></div><div class="error-trend" style="color:${color}">→ 확인 필요</div>`;
+      errorList.insertAdjacentElement('afterbegin', div);
+    });
+  }
+
+  // 5. 대시보드 "최근 수업 분석 결과" 카드 표시
+  const latestCard = document.getElementById('dashboard-latest-lesson');
+  const latestContent = document.getElementById('dashboard-latest-content');
+  if(latestCard && latestContent && allErrors.length > 0){
+    latestCard.style.display = 'block';
+    let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px">📅 ${new Date().toISOString().slice(0,10)} · ${parsed.session_topic||'수업 분석'}</div>`;
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">`;
+    allErrors.slice(0,4).forEach(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      html += `<span style="font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.05);color:${color}">${e.original||''} → ${e.corrected||''}</span>`;
+    });
+    html += `</div>`;
+    if(parsed.briefing_for_next){
+      html += `<div style="font-size:12px;color:var(--accent);padding:8px 10px;background:rgba(200,185,122,.08);border-radius:6px;border-left:2px solid var(--accent)">👉 ${parsed.briefing_for_next}</div>`;
+    }
+    latestContent.innerHTML = html;
+  }
+
+  // 6. 수업 기록(history) 탭 업데이트 — 새 분석 때만
+  if(!isRestore) updateHistoryList(parsed);
+
+  // 7. 설정 페이지 총 수업 수
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
+// ── 수업 기록 전체 렌더링 ────────────────────────────
+function updateHistoryList(parsed){
+  // 새 분석 후 호출 — sessions에 이미 추가된 상태이므로 전체 재렌더링
+  renderHistoryList();
+}
+
+// 하드코딩된 초기 수업 데이터 (분석 결과 없는 기존 수업)
+const HARDCODED_SESSIONS = [
+  {date:'2026-04-28', session_topic:'에너지 산업 / SMR 정책', hardcoded:true,
+   tutor_corrections:[{original:'safely',corrected:'safety',type:'other',explanation_ko:'형용사/명사 혼동'},{original:'adjure',corrected:'agile',type:'other',explanation_ko:'단어 선택 오류'}],
+   recurring_errors_found:[{original:'관사 오류 3건',corrected:'정관사/부정관사 구분',type:'article',explanation_ko:'매 수업 반복되는 관사 오류'}]},
+  {date:'2026-04-19', session_topic:'비즈니스 컨설팅 / 직업 소개', hardcoded:true,
+   tutor_corrections:[{original:'it is very burdening',corrected:'it weighs on me',type:'translation',explanation_ko:'한국식 직역 교정'},{original:'직역 표현 5건',corrected:'자연스러운 영어 구조',type:'translation',explanation_ko:'구조적 직역 패턴'}],
+   improvements_noted:['fell into 표현 자연스럽게 사용']},
+  {date:'2026-04-04', session_topic:'인천 / 서울 생활', hardcoded:true,
+   tutor_corrections:[{original:'located on',corrected:'located in',type:'other',explanation_ko:'전치사 선택 오류'},{original:'much much',corrected:'significantly',type:'other',explanation_ko:'반복 강조 표현 → 부사로 교체'}]},
+];
+
+function renderHistoryList(){
+  const list = document.getElementById('history-list');
+  if(!list) return;
+
+  // sessions + 하드코딩 합쳐서 날짜 역순 정렬
+  const allSessions = [...sessions, ...HARDCODED_SESSIONS]
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  const sub = document.getElementById('history-subtitle');
+  if(sub) sub.textContent = `총 ${BASE_SESSIONS + sessions.length}회 수업 · ${allSessions.length}회 분석 완료`;
+
+  if(!allSessions.length){
+    list.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:12px 0">아직 분석된 수업이 없어요.</div>';
+    return;
+  }
+
+  list.innerHTML = allSessions.map((s, idx) => {
+    const allErrors = [
+      ...(s.tutor_corrections||[]),
+      ...(s.tutor_missed_errors||[]),
+      ...(s.recurring_errors_found||[]),
+      ...(s.key_errors||[]),
+    ];
+    const dateStr = (s.date||'').replace(/-/g, '.');
+    const topic = s.session_topic || '수업';
+    const errorCount = allErrors.length;
+    const improveCount = (s.improvements_noted||[]).length;
+
+    const tags = allErrors.slice(0,3).map(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)'
+        : (e.type==='connector'||e.type==='verb') ? 'var(--amber)'
+        : 'var(--text3)';
+      const label = (e.original||'').slice(0,14) + '→' + (e.corrected||'').slice(0,14);
+      return `<span class="err-tag" style="color:${color}">${label}</span>`;
+    }).join('');
+
+    // sessions 배열에서의 실제 인덱스 (클릭 시 상세 보기용)
+    const sessionIdx = sessions.indexOf(s);
+    const isHardcoded = s.hardcoded;
+    const clickAttr = isHardcoded
+      ? `onclick="openLessonModal(null, ${HARDCODED_SESSIONS.indexOf(s)}, true)"`
+      : `onclick="openLessonModal(${sessionIdx}, -1, false)"`;
+
+    return `<div class="timeline-item" ${clickAttr}>
+      <div class="timeline-date" style="width:76px">${dateStr}</div>
+      <div class="timeline-content" style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+          <div class="timeline-topic">${topic}</div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--text3)">
+            ${errorCount > 0 ? `<span style="color:var(--red)">오류 ${errorCount}</span>` : ''}
+            ${improveCount > 0 ? ` · <span style="color:var(--green)">개선 ${improveCount}</span>` : ''}
+            <span style="color:var(--text3);margin-left:6px">›</span>
+          </div>
+        </div>
+        <div class="timeline-errors">${tags}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openLessonModal(sessionIdx, hardcodedIdx, isHardcoded){
+  const s = isHardcoded ? HARDCODED_SESSIONS[hardcodedIdx] : sessions[sessionIdx];
+  if(!s) return;
+
+  document.getElementById('modal-title').textContent = s.session_topic || '수업 분석';
+  document.getElementById('modal-date').textContent = (s.date||'').replace(/-/g,'.');
+
+  const allErrors = [
+    ...(s.tutor_corrections||[]),
+    ...(s.tutor_missed_errors||[]),
+    ...(s.recurring_errors_found||[]),
+    ...(s.key_errors||[]),
+  ];
+
+  let html = '';
+
+  if(s.tutor_corrections?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📝 튜터 교정 (${s.tutor_corrections.length}건)</div>`;
+    s.tutor_corrections.forEach(e => { html += errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)'); });
+    html += '</div>';
+  }
+  if(s.tutor_missed_errors?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">⚠ 튜터가 놓친 오류 (${s.tutor_missed_errors.length}건)</div>`;
+    s.tutor_missed_errors.forEach(e => { html += errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)'); });
+    html += '</div>';
+  }
+  if(s.recurring_errors_found?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--red);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">🔁 반복 오류 (${s.recurring_errors_found.length}건)</div>`;
+    s.recurring_errors_found.forEach(e => { html += errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)'); });
+    html += '</div>';
+  }
+  if(s.key_errors?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">발견된 오류 (${s.key_errors.length}건)</div>`;
+    s.key_errors.forEach(e => { html += errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)'); });
+    html += '</div>';
+  }
+  if(s.new_expressions?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">✨ 새로운 표현</div>`;
+    s.new_expressions.forEach(ex => {
+      html += `<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+        <div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko||''}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example||''}"</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  if(s.improvements_noted?.length){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">👍 개선된 점</div>`;
+    s.improvements_noted.forEach(i => { html += `<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`; });
+    html += '</div>';
+  }
+  if(s.briefing_for_next){
+    html += `<div style="margin-bottom:20px"><div class="chunk-label" style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">다음 수업 과제</div>
+      <div style="font-size:13px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${s.briefing_for_next}</div>
+    </div>`;
+  }
+  if(!html) html = '<div style="font-size:13px;color:var(--text3)">상세 분석 데이터가 없어요.</div>';
+
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('lesson-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLessonModal(){
+  document.getElementById('lesson-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── 초기화 ────────────────────────────────────────────
+function init(){
+  apiKey = localStorage.getItem(API_KEY_S)||'';
+  document.getElementById('api-key-input').value = apiKey;
+  updateApiStatus(!!apiKey);
+
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    sessions = s.sessions||[];
+    diaryEntries = s.diaryEntries||[];
+  }catch(e){}
+
+  try{ drillWrongBank = JSON.parse(localStorage.getItem('drill_wrongs')||'[]'); }catch(e){}
+
+  // 총 수업 수 반영
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  shuffleDrill(); loadDrill();
+  loadDailyInfo(); renderDiaryHistory(); updateStreak();
+  renderWrongBank();
+  renderHistoryList();
+  renderExpressions();
+  restoreRecentLesson();
+}
+
+function updateApiStatus(ok){
+  document.getElementById('api-dot').className = 'api-dot'+(ok?' ok':'');
+  document.getElementById('api-status-text').textContent = ok?'API 연결됨':'API 미연결';
+}
+
+function nav(page, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function switchTab(name, el){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key){toast('API 키를 입력해주세요.');return;}
+  localStorage.setItem(API_KEY_S, key); apiKey=key; updateApiStatus(true); toast('저장됐어요!');
+}
+
+async function testApiKey(){
+  const key = document.getElementById('api-key-input').value.trim()||apiKey;
+  if(!key){toast('API 키를 먼저 입력해주세요.');return;}
+  const st = document.getElementById('key-status');
+  st.textContent='테스트 중...'; st.style.color='var(--text3)';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    if(r.ok){st.textContent='✓ 연결 성공';st.style.color='var(--green)';apiKey=key;updateApiStatus(true);}
+    else{st.textContent='✗ 키 오류';st.style.color='var(--red)';}
+  }catch(e){st.textContent='✗ 네트워크 오류';st.style.color='var(--red)';}
+}
+
+// ── Daily Sentence ────────────────────────────────────
+function loadDailyInfo(){
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('s-date').textContent = today;
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  if(saved.date===today && saved.sentence) renderSentence(saved.sentence);
+  else pickDailySentence();
+}
+
+function pickDailySentence(){
+  const roll = Math.random();
+  let pool;
+  if(roll<0.4) pool = SENTENCE_POOL.filter(s=>s.type==='correction');
+  else if(roll<0.7) pool = SENTENCE_POOL.filter(s=>s.type==='business');
+  else pool = SENTENCE_POOL.filter(s=>s.type==='casual');
+  const picked = pool[Math.floor(Math.random()*pool.length)];
+  localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:picked}));
+  renderSentence(picked);
+}
+
+function renderSentence(s){
+  const badge = document.getElementById('s-type-badge');
+  badge.textContent = s.badge; badge.className = 'sentence-type briefing-tag '+s.badgeClass;
+  document.getElementById('s-english').textContent = s.english;
+  document.getElementById('s-korean').textContent = s.korean;
+  document.getElementById('s-note').textContent = s.note;
+}
+
+async function generateDailySentence(){
+  if(!apiKey){pickDailySentence();toast('풀에서 새 문장을 뽑았어요!');return;}
+  const btn = document.getElementById('gen-btn');
+  btn.disabled=true; btn.textContent='생성 중...';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
+    const data = await r.json();
+    const s = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:s}));
+    renderSentence(s); toast('새 문장이 생성됐어요!');
+  }catch(e){pickDailySentence();toast('풀에서 문장을 뽑았어요.');}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg> 새 문장 생성';
+}
+
+async function checkDiary(){
+  const text = document.getElementById('diary-input').value.trim();
+  if(!text){toast('문장을 먼저 써보세요.');return;}
+  if(!apiKey){toast('설정에서 API 키를 입력해주세요.');return;}
+  document.getElementById('diary-loading').style.display='block';
+  document.getElementById('diary-feedback').style.display='none';
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  const target = saved.sentence?.english||'';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
+    const data = await r.json();
+    const fb = document.getElementById('diary-feedback');
+    fb.textContent = data.content.map(i=>i.text||'').join(''); fb.style.display='block';
+  }catch(e){toast('피드백 요청 실패.');}
+  document.getElementById('diary-loading').style.display='none';
+}
+
+function saveDiaryEntry(){
+  const text = document.getElementById('diary-input').value.trim();
+  if(!text){toast('먼저 문장을 써보세요.');return;}
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  diaryEntries.unshift({date:new Date().toISOString().slice(0,10),entry:text,sentence:saved.sentence?.english||''});
+  if(diaryEntries.length>60) diaryEntries=diaryEntries.slice(0,60);
+  saveState(); renderDiaryHistory();
+  document.getElementById('diary-input').value='';
+  document.getElementById('diary-feedback').style.display='none';
+  updateStreak(); toast('저장됐어요! 🎉');
+}
+
+function renderDiaryHistory(){
+  const list = document.getElementById('diary-history-list');
+  if(!diaryEntries.length){list.innerHTML='<span style="font-size:13px;color:var(--text3)">아직 저장된 일기가 없어요.</span>';return;}
+  list.innerHTML = diaryEntries.slice(0,5).map(e=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
+      <div style="font-size:13px;color:var(--text);margin-bottom:4px">${e.entry}</div>
+      ${e.sentence?`<div style="font-size:11px;color:var(--text3)">📌 ${e.sentence.slice(0,50)}...</div>`:''}
+    </div>`).join('')+(diaryEntries.length>5?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${diaryEntries.length-5}개 더</div>`:'');
+}
+
+function updateStreak(){
+  if(!diaryEntries.length){document.getElementById('streak-val').textContent=0;return;}
+  let streak=0, d=new Date();
+  for(let i=0;i<60;i++){
+    const ds = d.toISOString().slice(0,10);
+    if(diaryEntries.find(e=>e.date===ds)){streak++;d.setDate(d.getDate()-1);}
+    else{if(i===0){d.setDate(d.getDate()-1);continue;}break;}
+  }
+  document.getElementById('streak-val').textContent=streak;
+}
+
+// ── Upload — dual PDF ────────────────────────────────
+const dualFiles = {feedback:null, script:null};
+
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('dragover');}
+function dragLeave(e){e.currentTarget.classList.remove('dragover');}
+
+function dropDual(e, type){
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if(f?.type==='application/pdf') loadDualFile(f, type);
+  else toast('PDF 파일만 가능합니다.');
+}
+
+function loadDualFile(file, type){
+  if(!file) return;
+  dualFiles[type] = file;
+  document.getElementById('icon-'+type).textContent = '✅';
+  document.getElementById('text-'+type).textContent = file.name.slice(0,30)+(file.name.length>30?'...':'');
+  document.getElementById('hint-'+type).textContent = Math.round(file.size/1024)+'KB';
+  document.getElementById('zone-'+type).style.borderColor = 'var(--green)';
+
+  const btn = document.getElementById('analyze-dual-btn');
+  if(dualFiles.feedback){
+    btn.disabled = false;
+    btn.textContent = dualFiles.script ? '두 PDF 합쳐서 분석하기' : '피드백 PDF만 분석하기';
+  }
+}
+
+async function analyzeDualPDF(){
+  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
+  if(!dualFiles.feedback){toast('튜터 피드백 PDF를 먼저 올려주세요.');return;}
+  showLoading(true); showResult(false);
+
+  function toBase64(file){
+    return new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=e=>res(e.target.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  try{
+    const feedbackB64 = await toBase64(dualFiles.feedback);
+    const scriptB64 = dualFiles.script ? await toBase64(dualFiles.script) : null;
+
+    const knownErrors = `This learner's known recurring errors:
+1) Article/plural: "the pros is", "every items", "very many knowledge"
+2) Korean direct translation: "starting point making me interested", "I have passion to", "what makes me hard is", "it is very burdening", "happened to get into"
+3) Connector overuse: repeating "so" instead of while/whereas/that said
+4) Verb nuance: "deal with" (negative connotation when not intended), "composed of" (overused)`;
+
+    const contentArr = [
+      {type:'document', source:{type:'base64', media_type:'application/pdf', data:feedbackB64}},
+    ];
+    if(scriptB64) contentArr.push({type:'document', source:{type:'base64', media_type:'application/pdf', data:scriptB64}});
+
+    const promptText = scriptB64
+      ? `You are analyzing TWO PDFs from a Ringle English tutoring session for a Korean business consultant.
+Document 1: Tutor's feedback/editing document (corrections the tutor made)
+Document 2: Lesson transcript (full conversation script)
+
+${knownErrors}
+
+Analyze BOTH documents together and return:
+- Errors the tutor corrected (from doc 1)
+- Errors the tutor MISSED that appear in doc 2
+- Known recurring patterns that still appear
+- Any improvements vs typical patterns
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "tutor_missed_errors": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": ["개선된 점"],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`
+      : `You are analyzing a Ringle tutoring feedback PDF for a Korean business consultant.
+
+${knownErrors}
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "tutor_missed_errors": [],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": [],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`;
+
+    contentArr.push({type:'text', text:promptText});
+
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:contentArr}]})
+    });
+    const data = await r.json();
+    let rawText = data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd = rawText.lastIndexOf('}');
+    if(jsonStart===-1||jsonEnd===-1) throw new Error('JSON 없음');
+    rawText = rawText.slice(jsonStart, jsonEnd+1);
+    const parsed = JSON.parse(rawText);
+
+    renderDualResult(parsed, !!scriptB64);
+
+    // ✅ 핵심: 세션 저장 → 대시보드/브리핑/드릴 모두 업데이트
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:dualFiles.feedback.name, source:'dual-pdf'});
+    saveState();
+    saveLatestLesson(parsed);
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed);
+
+  }catch(e){toast('분석 실패: '+e.message); console.error(e);}
+  finally{showLoading(false);}
+}
+
+function renderDualResult(p, hasScript){
+  document.getElementById('result-title').textContent = (p.session_topic||'수업 분석')+(hasScript?' — 피드백 + 스크립트':' — 피드백');
+  let html='';
+
+  if(p.tutor_corrections?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">📝 튜터 교정 (${p.tutor_corrections.length}건)</div>`;
+    p.tutor_corrections.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)');});
+    html+='</div>';
+  }
+  if(p.tutor_missed_errors?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">⚠ 튜터가 놓친 오류 (${p.tutor_missed_errors.length}건)</div>`;
+    p.tutor_missed_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+  if(p.recurring_errors_found?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">🔁 이전 수업과 같은 오류 (${p.recurring_errors_found.length}건)</div>`;
+    p.recurring_errors_found.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+  if(p.new_expressions?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">✨ 새로운 표현</div>`;
+    p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
+    html+='</div>';
+  }
+  if(p.improvements_noted?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--green)">👍 개선된 점</div>${p.improvements_noted.map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`).join('')}</div>`;
+  }
+  if(p.briefing_for_next){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 최우선 과제</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  }
+
+  document.getElementById('result-content').innerHTML = html;
+  showResult(true);
+  toast('분석 완료! 🎉 대시보드가 업데이트됐어요.');
+}
+
+async function analyzeMemo(){
+  const memo = document.getElementById('memo-input').value.trim();
+  if(!memo){toast('내용을 입력해주세요.');return;}
+  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
+  showLoading(true); showResult(false);
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","tutor_corrections":[],"tutor_missed_errors":[],"recurring_errors_found":[],"key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[],"improvements_noted":[],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
+    const data = await r.json();
+    const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    renderPDFResult(parsed);
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:'memo', source:'memo'});
+    saveState();
+    saveLatestLesson(parsed);
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed);
+  }catch(e){toast('분석 실패: '+e.message);}
+  finally{showLoading(false);}
+}
+
+function renderPDFResult(p){
+  document.getElementById('result-title').textContent = p.session_topic||'분석 결과';
+  let html='';
+  const errors = p.key_errors||p.tutor_corrections||[];
+  if(errors.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">발견된 오류 (${errors.length}건)</div>`;
+    errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko);});
+    html+='</div>';
+  }
+  if(p.new_expressions?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">새로운 표현</div>`;
+    p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
+    html+='</div>';
+  }
+  if(p.improvement_note) html+=`<div class="analysis-chunk"><div class="chunk-label">피드백</div><div style="font-size:13px;color:var(--text2)">${p.improvement_note}</div></div>`;
+  if(p.briefing_for_next) html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 전 의식할 것</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  document.getElementById('result-content').innerHTML=html;
+  showResult(true); toast('분석 완료!');
+}
+
+function errHTML(original, corrected, note, color='var(--red)'){
+  return`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="color:${color};font-family:var(--mono);font-size:12px;text-decoration:line-through">${original||''}</span><span style="color:var(--text3)">→</span><span style="color:var(--green);font-family:var(--mono);font-size:12px">${corrected||''}</span></div><div style="font-size:11px;color:var(--text3)">${note||''}</div></div>`;
+}
+
+function showLoading(v){document.getElementById('analyze-loading').style.display=v?'block':'none';}
+function showResult(v){document.getElementById('analysis-result').classList.toggle('visible',v);}
+
+// ── Drill ─────────────────────────────────────────────
+function shuffleDrill(){
+  drillQueue = [...DRILLS].sort(()=>Math.random()-.5);
+  drillIndex=0; drillCorrect=0; drillWrong=0; drillAnswered=false;
+}
+
+function loadDrill(){
+  if(drillIndex>=drillQueue.length){
+    document.getElementById('drill-korean').textContent='세션 완료! 🎉';
+    document.getElementById('drill-input').style.display='none';
+    document.getElementById('drill-submit-btn').style.display='none';
+    document.getElementById('drill-skip-btn').style.display='none';
+    document.getElementById('drill-next-btn').style.display='none';
+    const fb = document.getElementById('drill-feedback');
+    fb.className='drill-feedback correct';
+    fb.textContent=`✓ ${drillCorrect}개 맞음  ✗ ${drillWrong}개 틀림`;
+    fb.style.display='block';
+    document.getElementById('drill-progress').textContent='세션 완료';
+    return;
+  }
+  const item = drillQueue[drillIndex];
+  document.getElementById('drill-korean').textContent=item.korean;
+  document.getElementById('drill-input').value='';
+  document.getElementById('drill-input').className='drill-input';
+  document.getElementById('drill-input').style.display='block';
+  document.getElementById('drill-feedback').style.display='none';
+  document.getElementById('drill-model').style.display='none';
+  document.getElementById('drill-note').style.display='none';
+  document.getElementById('drill-submit-btn').style.display='inline-flex';
+  document.getElementById('drill-submit-btn').disabled=false;
+  document.getElementById('drill-submit-btn').textContent='제출';
+  document.getElementById('drill-next-btn').style.display='none';
+  document.getElementById('drill-skip-btn').style.display='inline-flex';
+  document.getElementById('drill-progress').textContent=`${drillIndex+1} / ${drillQueue.length}`;
+  document.getElementById('drill-remaining').textContent=drillQueue.length-drillIndex;
+  drillAnswered=false;
+  const input = document.getElementById('drill-input');
+  input.onkeydown=e=>{ if(e.key==='Enter'&&!drillAnswered) submitDrill(); };
+  setTimeout(()=>input.focus(), 100);
+}
+
+async function submitDrill(){
+  if(drillAnswered) return;
+  const userAnswer = document.getElementById('drill-input').value.trim();
+  if(!userAnswer){toast('영어로 입력해주세요.');return;}
+
+  drillAnswered=true;
+  const item = drillQueue[drillIndex];
+  const submitBtn = document.getElementById('drill-submit-btn');
+  submitBtn.disabled=true; submitBtn.textContent='채점 중...';
+
+  let isCorrect=false, feedbackText='';
+
+  if(apiKey){
+    try{
+      const r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:
+          `Grade this English answer for a Korean learner.
+Korean prompt: "${item.korean}"
+Model answer(s): "${item.english}"
+Learner's answer: "${userAnswer}"
+
+Is the answer correct or acceptable? Consider meaning and naturalness, not exact wording.
+Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장 피드백. 맞으면 칭찬+뉘앙스 팁, 틀리면 어디가 어색한지"}`
+        }]})
+      });
+      const data = await r.json();
+      const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+      isCorrect=parsed.correct; feedbackText=parsed.feedback_ko;
+    }catch(e){
+      const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+      isCorrect=keywords.some(k=>userAnswer.toLowerCase().includes(k));
+      feedbackText=isCorrect?'잘했어요!':'다시 한 번 확인해보세요.';
+    }
+  } else {
+    const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+    isCorrect=keywords.filter(k=>userAnswer.toLowerCase().includes(k)).length>=2;
+    feedbackText=isCorrect?'정답이에요! (API 연결 시 더 정밀한 채점 가능)':'아쉬워요. 모범 답안을 확인해보세요. (API 연결 시 자세한 피드백 가능)';
+  }
+
+  const input=document.getElementById('drill-input');
+  const feedback=document.getElementById('drill-feedback');
+  const model=document.getElementById('drill-model');
+  const note=document.getElementById('drill-note');
+
+  input.className='drill-input '+(isCorrect?'correct':'wrong');
+  feedback.className='drill-feedback '+(isCorrect?'correct':'wrong');
+  feedback.textContent=(isCorrect?'✓ ':'✗ ')+feedbackText;
+  feedback.style.display='block';
+  model.textContent='모범 답안: '+item.english;
+  model.style.display='block';
+  note.textContent=item.note;
+  note.style.display='block';
+
+  if(isCorrect){
+    drillCorrect++;
+    document.getElementById('drill-correct').textContent=drillCorrect;
+  } else {
+    drillWrong++;
+    document.getElementById('drill-wrong').textContent=drillWrong;
+    addToWrongBank(item, userAnswer);
+  }
+
+  submitBtn.style.display='none';
+  document.getElementById('drill-next-btn').style.display='inline-flex';
+}
+
+function nextDrill(){drillIndex++;loadDrill();}
+function skipDrill(){drillIndex++;loadDrill();}
+
+function addToWrongBank(item, userAnswer){
+  const entry={
+    date:new Date().toISOString().slice(0,10),
+    korean:item.korean,
+    modelEnglish:item.english,
+    userAnswer:userAnswer,
+    note:item.note,
+  };
+  drillWrongBank.unshift(entry);
+  if(drillWrongBank.length>30) drillWrongBank=drillWrongBank.slice(0,30);
+  localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
+  renderWrongBank();
+}
+
+function renderWrongBank(){
+  const bank=document.getElementById('drill-wrong-bank');
+  const list=document.getElementById('drill-wrong-bank-list');
+  const preview=document.getElementById('drill-wrongs-preview');
+  const previewList=document.getElementById('drill-wrongs-list');
+
+  if(!drillWrongBank.length){bank.style.display='none';preview.style.display='none';return;}
+
+  bank.style.display='block';
+  list.innerHTML=drillWrongBank.slice(0,8).map(e=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
+      <div style="font-size:13px;color:var(--red);margin-bottom:3px">${e.korean}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:2px">내 답: <span style="font-family:var(--mono)">${e.userAnswer}</span></div>
+      <div style="font-size:12px;color:var(--green)">정답: <span style="font-family:var(--mono)">${e.modelEnglish}</span></div>
+    </div>`).join('')+(drillWrongBank.length>8?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${drillWrongBank.length-8}개 더</div>`:'');
+
+  const today=new Date().toISOString().slice(0,10);
+  const sessionWrongs=drillWrongBank.filter(e=>e.date===today);
+  if(sessionWrongs.length>0){
+    preview.style.display='block';
+    previewList.innerHTML=sessionWrongs.slice(0,3).map(e=>`
+      <div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2)">${e.korean}</span>
+        <span style="color:var(--text3);margin:0 6px">→</span>
+        <span style="color:var(--green);font-family:var(--mono)">${e.modelEnglish.split('/')[0].trim()}</span>
+      </div>`).join('');
+  }
+}
+
+function clearWrongBank(){
+  if(!confirm('누적 오답을 초기화할까요?')) return;
+  drillWrongBank=[];
+  localStorage.removeItem('drill_wrongs');
+  renderWrongBank();
+  toast('오답 초기화됐어요.');
+}
+
+// ── 분석 결과 → 브리핑 & 드릴 자동 반영 ────────────────
+function syncAnalysisToLearning(parsed){
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  // 드릴 오답 뱅크에 수업 오류 추가
+  allErrors.forEach(e => {
+    if(!e.original||!e.corrected) return;
+    const entry={
+      date:new Date().toISOString().slice(0,10),
+      korean:e.original,
+      modelEnglish:e.corrected,
+      userAnswer:'',
+      note:e.explanation_ko||'',
+      source:'lesson',
+    };
+    drillWrongBank.unshift(entry);
+  });
+  if(drillWrongBank.length>50) drillWrongBank=drillWrongBank.slice(0,50);
+  localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
+  renderWrongBank();
+
+  // 브리핑 페이지 최근 수업 카드
+  const card=document.getElementById('recent-lesson-card');
+  const errList=document.getElementById('recent-lesson-errors');
+  const priority=document.getElementById('recent-lesson-priority');
+
+  if(card && allErrors.length>0){
+    card.style.display='block';
+    errList.innerHTML=allErrors.slice(0,4).map(e=>{
+      const typeColor=(e.type==='article'||e.type==='translation')?'var(--red)':'var(--amber)';
+      return`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="color:${typeColor};font-family:var(--mono);font-size:12px;text-decoration:line-through">${e.original}</span>
+          <span style="color:var(--text3)">→</span>
+          <span style="color:var(--green);font-family:var(--mono);font-size:12px">${e.corrected}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${e.explanation_ko||''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  if(priority && parsed.briefing_for_next){
+    priority.textContent='👉 '+parsed.briefing_for_next;
+    priority.style.display='block';
+  }
+
+  // 드릴 큐에 이번 수업 오류 기반 문제 추가
+  allErrors.slice(0,3).forEach(e=>{
+    if(!e.original||!e.corrected) return;
+    const newDrill={korean:e.original, english:e.corrected, note:(e.explanation_ko||'')+' (이번 수업에서 나온 오류)', fromLesson:true};
+    if(!DRILLS.find(d=>d.korean===e.original)) DRILLS.unshift(newDrill);
+  });
+
+  // 표현 사전 업데이트 — new_expressions를 localStorage에 누적 저장
+  if(parsed.new_expressions?.length){
+    try{
+      const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+      parsed.new_expressions.forEach(ex => {
+        if(!saved.find(s=>s.expression===ex.expression)) saved.unshift({...ex, date: new Date().toISOString().slice(0,10)});
+      });
+      localStorage.setItem('eng_expressions', JSON.stringify(saved.slice(0,100)));
+    }catch(e){}
+  }
+  renderExpressions();
+}
+
+// ── 표현 사전 렌더링 ──────────────────────────────────
+function renderExpressions(){
+  const container = document.getElementById('expressions-from-lessons');
+  if(!container) return;
+  try{
+    const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+    if(!saved.length){ container.style.display='none'; return; }
+    container.style.display='block';
+    container.innerHTML = `
+      <div class="expr-section-title">📚 수업에서 추가된 표현 (${saved.length}개)</div>
+      ${saved.map(ex=>`
+        <div class="expr-item">
+          <div class="expr-english" style="color:var(--accent)">${ex.expression}</div>
+          <div class="expr-arrow">→</div>
+          <div class="expr-english">${ex.meaning_ko||''}</div>
+          <div class="expr-note">${ex.example ? '"'+ex.example+'"' : ''} ${ex.date?'· '+ex.date:''}</div>
+        </div>`).join('')}
+    `;
+  }catch(e){}
+}
+
+// ── 저장 / 내보내기 ───────────────────────────────────
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({sessions, diaryEntries}));
+  // 총 수업 수 업데이트
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
+function saveLatestLesson(parsed){
+  // 최근 수업 분석 결과를 별도 키로 저장 — 재접속 시 모든 메뉴 복원에 사용
+  localStorage.setItem('eng_latest_lesson', JSON.stringify({
+    ...parsed,
+    savedAt: new Date().toISOString()
+  }));
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({sessions,diaryEntries},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='english_tracker_data.json'; a.click();
+}
+
+function clearData(){
+  if(!confirm('모든 데이터를 초기화할까요?')) return;
+  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(DAILY_KEY); localStorage.removeItem('eng_latest_lesson'); localStorage.removeItem('eng_expressions');
+  sessions=[]; diaryEntries=[];
+  renderDiaryHistory(); updateStreak();
+  // 대시보드 초기 상태로 복원
+  document.getElementById('stat-total').textContent = BASE_SESSIONS;
+  document.getElementById('total-sessions').textContent = BASE_SESSIONS;
+  document.getElementById('dashboard-latest-lesson').style.display='none';
+  document.getElementById('recent-lesson-card').style.display='none';
+  toast('초기화됐어요.');
+}
+
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ── 앱 시작 시 최근 수업 복원 ────────────────────────
+function restoreRecentLesson(){
+  // eng_latest_lesson 키에서 최근 분석 결과 복원 (기간 제한 없음)
+  try {
+    const raw = localStorage.getItem('eng_latest_lesson');
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(!parsed) return;
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed, true); // isRestore=true → 수업 기록 중복 추가 안 함
+  } catch(e) {
+    console.warn('[Tracker] restoreRecentLesson failed:', e);
+  }
+}
+
+// ── 확장에서 넘어온 수업 데이터 처리 ─────────────────
+(function handleExtensionPayload(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=params.get('lesson');
+  if(!raw) return;
+  try{
+    const data=JSON.parse(decodeURIComponent(raw));
+    if(data.source!=='extension') return;
+    window.history.replaceState({},'',(window.location.pathname));
+    setTimeout(()=>{
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
+      document.getElementById('page-upload').classList.add('active');
+      toast('📝 확장에서 데이터가 왔어요. PDF를 올려주세요.');
+    },300);
+  }catch(e){console.error('[Tracker] Failed to parse extension payload:',e);}
+})();
+
+init();
+
+// ── PWA Service Worker 등록 ───────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/english/sw.js')
+      .then(reg => console.log('[PWA] SW registered:', reg.scope))
+      .catch(err => console.log('[PWA] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
+  .shell{flex-direction:column;}
+  .sidebar{display:none;}
+  .main{padding:20px 16px 80px;max-width:100%;}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg2);border-top:1px solid var(--border);z-index:100;}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;transition:color .15s;border:none;background:none;padding:0;}
+  .bnav-item.active{color:var(--accent);}
+  .bnav-icon{width:20px;height:20px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .page-title{font-size:24px;}
+}
+
+.logo{padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.logo-title{font-family:var(--serif);font-size:18px;color:var(--accent);line-height:1.2;}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;border:none;border-left:2px solid transparent;background:none;width:100%;text-align:left;}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
+.nav-item.active{color:var(--accent);border-left:2px solid var(--accent);background:rgba(200,185,122,.06);}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon{opacity:1;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px 0;border-top:1px solid var(--border);}
+.api-status{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.api-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text3);margin-right:6px;}
+.api-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
+
+.page{display:none;}
+.page.active{display:block;}
+.page-header{margin-bottom:28px;}
+.page-title{font-family:var(--serif);font-size:32px;color:var(--text);line-height:1.1;}
+.page-subtitle{color:var(--text2);font-size:13px;margin-top:6px;}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.stat-value{font-family:var(--serif);font-size:28px;color:var(--accent);line-height:1;}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+
+.error-list{display:flex;flex-direction:column;gap:14px;}
+.error-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.error-name{font-size:13px;color:var(--text);}
+.bar-bg{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.error-trend{font-size:11px;color:var(--text3);margin-top:4px;}
+
+.briefing-item{padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;}
+.briefing-tag{display:inline-block;font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:4px;margin-bottom:8px;}
+.tag-red{background:rgba(201,106,90,.15);color:var(--red);}
+.tag-amber{background:rgba(200,137,90,.15);color:var(--amber);}
+.tag-green{background:rgba(143,168,110,.15);color:var(--green);}
+.tag-purple{background:rgba(138,122,184,.15);color:var(--purple);}
+.tag-teal{background:rgba(106,168,160,.15);color:var(--teal);}
+.briefing-text{font-size:13px;color:var(--text);line-height:1.5;}
+
+.expr-section{margin-bottom:24px;}
+.expr-section-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+.expr-item{display:grid;grid-template-columns:1fr 16px 1fr;align-items:start;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+.expr-korean{color:var(--red);font-size:13px;}
+.expr-arrow{color:var(--text3);text-align:center;font-size:12px;padding-top:2px;}
+.expr-english{color:var(--green);font-size:13px;}
+.expr-note{grid-column:1/-1;font-size:11px;color:var(--text3);padding-top:6px;border-top:1px solid var(--border);margin-top:4px;}
+
+.drill-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;}
+.drill-prompt-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;}
+.drill-korean{font-family:var(--serif);font-size:22px;color:var(--text);margin-bottom:20px;line-height:1.4;}
+.drill-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--sans);font-size:15px;transition:border-color .15s;margin-bottom:12px;}
+.drill-input:focus{outline:none;border-color:var(--accent);}
+.drill-input.correct{border-color:var(--green);background:rgba(143,168,110,.08);}
+.drill-input.wrong{border-color:var(--red);background:rgba(201,106,90,.08);}
+.drill-feedback{font-size:13px;line-height:1.6;padding:12px 14px;border-radius:8px;margin-bottom:12px;display:none;}
+.drill-feedback.correct{background:rgba(143,168,110,.1);color:var(--green);border:1px solid rgba(143,168,110,.3);}
+.drill-feedback.wrong{background:rgba(201,106,90,.1);color:var(--red);border:1px solid rgba(201,106,90,.3);}
+.drill-model{font-size:13px;color:var(--green);margin-top:8px;display:none;line-height:1.6;}
+.drill-note{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono);line-height:1.5;display:none;}
+.drill-controls{display:flex;gap:10px;flex-wrap:wrap;}
+.drill-progress{font-size:11px;font-family:var(--mono);color:var(--text3);text-align:center;margin-bottom:16px;}
+
+.sentence-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;margin-bottom:16px;position:relative;overflow:hidden;}
+.sentence-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--teal));}
+.sentence-date{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;}
+.sentence-type{display:inline-block;font-size:10px;font-family:var(--mono);padding:3px 10px;border-radius:20px;margin-bottom:14px;}
+.sentence-english{font-family:var(--serif);font-size:20px;color:var(--text);line-height:1.5;margin-bottom:12px;}
+.sentence-korean{font-size:13px;color:var(--text2);margin-bottom:10px;}
+.sentence-note{font-size:12px;color:var(--text3);padding:10px 12px;background:var(--bg3);border-radius:8px;line-height:1.5;}
+.diary-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--sans);font-size:14px;resize:none;min-height:80px;margin-top:12px;transition:border-color .15s;}
+.diary-area:focus{outline:none;border-color:var(--accent);}
+.diary-feedback{font-size:13px;color:var(--green);margin-top:10px;display:none;line-height:1.6;padding:12px;background:rgba(143,168,110,.08);border-radius:8px;border-left:3px solid var(--green);}
+
+.tab-row{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.tab-btn{flex:1;padding:10px 8px;background:transparent;border:none;border-right:1px solid var(--border);color:var(--text2);font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--sans);}
+.tab-btn:last-child{border-right:none;}
+.tab-btn.active{background:var(--bg3);color:var(--accent);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+.upload-zone{border:1px dashed var(--border2);border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);margin-bottom:16px;}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(200,185,122,.04);}
+.upload-icon{font-size:28px;margin-bottom:10px;opacity:.5;}
+.upload-text{color:var(--text2);font-size:13px;}
+.upload-hint{color:var(--text3);font-size:11px;margin-top:4px;font-family:var(--mono);}
+
+.analysis-result{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px;display:none;}
+.analysis-result.visible{display:block;}
+.analysis-chunk{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.analysis-chunk:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.chunk-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;}
+
+.timeline-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.timeline-item:last-child{border-bottom:none;}
+.timeline-date{font-size:11px;font-family:var(--mono);color:var(--text3);width:70px;flex-shrink:0;padding-top:2px;}
+.timeline-content{flex:1;}
+.timeline-topic{font-size:13px;color:var(--text);margin-bottom:5px;}
+.timeline-errors{display:flex;gap:6px;flex-wrap:wrap;}
+.err-tag{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--text3);}
+
+.input-group{margin-bottom:14px;}
+.input-label{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.06em;}
+.input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:13px;transition:border-color .15s;}
+.input:focus{outline:none;border-color:var(--accent);}
+.textarea{resize:vertical;min-height:100px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--sans);border:1px solid var(--border2);background:var(--bg3);color:var(--text);}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600;}
+.btn-primary:hover{background:#d4c68a;color:var(--bg);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.loading{display:inline-flex;align-items:center;gap:8px;color:var(--text3);font-size:12px;font-family:var(--mono);}
+.spinner{width:14px;height:14px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.settings-section{margin-bottom:28px;}
+.settings-title{font-size:13px;color:var(--text);font-weight:500;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+
+.toast{position:fixed;bottom:72px;right:16px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:999;max-width:280px;}
+.toast.show{opacity:1;transform:translateY(0);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-title">English<br>Growth</div>
+    <div class="logo-sub">// Yejeong's tracker</div>
+  </div>
+  <button class="nav-item active" onclick="nav('dashboard',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+    대시보드
+  </button>
+  <button class="nav-item" onclick="nav('daily',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14"/></svg>
+    오늘의 문장
+  </button>
+  <button class="nav-item" onclick="nav('briefing',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 10,10"/></svg>
+    수업 전 브리핑
+  </button>
+  <button class="nav-item" onclick="nav('expressions',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+    표현 사전
+  </button>
+  <button class="nav-item" onclick="nav('drill',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3 3 7-7"/></svg>
+    드릴 연습
+  </button>
+  <button class="nav-item" onclick="nav('upload',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3m0 0L5 6m3-3l3 3"/><path d="M3 13h10"/></svg>
+    수업 분석
+  </button>
+  <button class="nav-item" onclick="nav('history',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><polyline points="8,4 8,8 6,10"/></svg>
+    수업 기록
+  </button>
+  <button class="nav-item" onclick="nav('settings',this)">
+    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+    설정
+  </button>
+  <div class="sidebar-bottom">
+    <div class="api-status"><span class="api-dot" id="api-dot"></span><span id="api-status-text">API 미연결</span></div>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div class="page-title">나의 영어 성장</div>
+    <div class="page-subtitle" id="dashboard-subtitle">29회 수업 분석 기반 · 2024.12 – 2026.04</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">총 수업</div>
+      <div class="stat-value" id="stat-total">29</div>
+      <div class="stat-sub" id="stat-total-sub">17개월간</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">정체 오류</div>
+      <div class="stat-value" id="stat-stagnant" style="color:var(--red)">3</div>
+      <div class="stat-sub" id="stat-stagnant-sub">관사·직역·연결어</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">개선 영역</div>
+      <div class="stat-value" id="stat-improving" style="color:var(--green)">2</div>
+      <div class="stat-sub" id="stat-improving-sub">어휘·논리구조</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">일기 연속</div>
+      <div class="stat-value" id="streak-val" style="color:var(--accent)">0</div>
+      <div class="stat-sub">일 연속</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">반복 오류 Top 5</div>
+      <div class="error-list" id="dashboard-error-list">
+        <div><div class="error-header"><span class="error-name">관사 / 단수복수</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">매 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:92%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
+        <div><div class="error-header"><span class="error-name">한국식 직역</span><span style="font-size:11px;font-family:var(--mono);color:var(--red)">핵심 병목</span></div><div class="bar-bg"><div class="bar-fill" style="width:80%;background:var(--red)"></div></div><div class="error-trend">→ 정체 중</div></div>
+        <div><div class="error-header"><span class="error-name">연결어 부족</span><span style="font-size:11px;font-family:var(--mono);color:var(--amber)">so···so</span></div><div class="bar-bg"><div class="bar-fill" style="width:72%;background:var(--amber)"></div></div><div class="error-trend">↑ 소폭 개선</div></div>
+        <div><div class="error-header"><span class="error-name">동사 선택</span><span style="font-size:11px;font-family:var(--mono);color:var(--amber)">뉘앙스</span></div><div class="bar-bg"><div class="bar-fill" style="width:52%;background:var(--amber)"></div></div><div class="error-trend">↑ 개선 중</div></div>
+        <div><div class="error-header"><span class="error-name">어휘 다양성</span><span style="font-size:11px;font-family:var(--mono);color:var(--green)">성장</span></div><div class="bar-bg"><div class="bar-fill" style="width:28%;background:var(--green)"></div></div><div class="error-trend">↑↑ 뚜렷한 성장</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">오늘 의식할 것</div>
+      <!-- 분석 후 자동으로 맨 위에 추가됨 -->
+      <div id="dashboard-briefing-list">
+        <div class="briefing-item" style="border-color:rgba(201,106,90,.3)"><span class="briefing-tag tag-red">관사</span><div class="briefing-text">"The pros <strong>are</strong>" — 복수 주어엔 복수 동사</div></div>
+        <div class="briefing-item" style="border-color:rgba(200,137,90,.3)"><span class="briefing-tag tag-amber">연결어</span><div class="briefing-text">so 연발 → <strong>while / that said / on top of that</strong></div></div>
+        <div class="briefing-item" style="border-color:rgba(143,168,110,.3)"><span class="briefing-tag tag-green">표현</span><div class="briefing-text">"I have passion to" → <strong>"I'm passionate about"</strong></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- 최근 수업 요약 (분석 후 표시) -->
+  <div id="dashboard-latest-lesson" style="display:none">
+    <div class="card" style="border-color:rgba(200,185,122,.25)">
+      <div class="card-title" style="color:var(--accent)">📊 최근 수업 분석 결과</div>
+      <div id="dashboard-latest-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY SENTENCE -->
+<div class="page" id="page-daily">
+  <div class="page-header">
+    <div class="page-title">오늘의 문장</div>
+    <div class="page-subtitle" id="daily-date-sub">매일 하나씩, 나에게 맞춘 표현</div>
+  </div>
+  <div class="sentence-card">
+    <div class="sentence-date" id="s-date"></div>
+    <div><span class="sentence-type briefing-tag" id="s-type-badge"></span></div>
+    <div class="sentence-english" id="s-english">—</div>
+    <div class="sentence-korean" id="s-korean"></div>
+    <div class="sentence-note" id="s-note"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="generateDailySentence()" id="gen-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg>
+      새 문장 생성
+    </button>
+    <button class="btn" onclick="saveDiaryEntry()">일기에 저장</button>
+  </div>
+  <div class="card">
+    <div class="card-title">이 문장으로 일기 한 줄 써보기</div>
+    <textarea class="diary-area" id="diary-input" placeholder="이 표현을 응용해서 오늘 있었던 일을 영어로 한 줄 써보세요..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+      <button class="btn" onclick="checkDiary()">피드백 받기</button>
+      <div id="diary-loading" style="display:none"><div class="loading"><div class="spinner"></div>확인 중...</div></div>
+    </div>
+    <div class="diary-feedback" id="diary-feedback"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">최근 일기 기록</div>
+    <div id="diary-history-list" style="font-size:13px;color:var(--text3)">아직 저장된 일기가 없어요.</div>
+  </div>
+</div>
+
+<!-- BRIEFING -->
+<div class="page" id="page-briefing">
+  <div class="page-header">
+    <div class="page-title">수업 전 브리핑</div>
+    <div class="page-subtitle">오늘 Ringle 수업에서 의식할 포인트</div>
+  </div>
+
+  <div class="card" id="recent-lesson-card" style="display:none;border-color:rgba(200,185,122,.3)">
+    <div class="card-title" style="color:var(--accent)">⚡ 최근 수업에서 나온 오류</div>
+    <div id="recent-lesson-errors"></div>
+    <div id="recent-lesson-priority" style="font-size:13px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent);margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔴 반드시 고칠 것 — 관사 / 단수복수</div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">복수 동사</span><div class="briefing-text">"The pros <strong>are</strong>" ✓ &nbsp;·&nbsp; "The pros is" ✗</div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">불가산 명사</span><div class="briefing-text"><strong>expertise, knowledge, feedback, advice</strong> — a/s 붙이지 않기</div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-red">every/each</span><div class="briefing-text"><strong>"every item"</strong> ✓ &nbsp;·&nbsp; "every items" ✗</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🟡 시도할 것 — 연결어 다양화</div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">대조</span><div class="briefing-text"><strong>while / whereas / that said / on the flip side</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">인과</span><div class="briefing-text"><strong>as a result / which means / consequently</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-amber">결론</span><div class="briefing-text"><strong>all things considered / the bottom line is / at the end of the day</strong></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🟢 써볼 표현</div>
+    <div class="briefing-item"><span class="briefing-tag tag-green">직역 교체</span><div class="briefing-text">"I have passion to ~" → <strong>"I'm passionate about ~"</strong><br>"It is burdening" → <strong>"It weighs on me"</strong><br>"I happened to get into" → <strong>"I fell into"</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-purple">MBA 표현</span><div class="briefing-text"><strong>strike a balance / reaping the rewards / I concur / wear many hats</strong></div></div>
+    <div class="briefing-item"><span class="briefing-tag tag-teal">캐주얼</span><div class="briefing-text"><strong>I'm in the same boat / from the get-go / herding cats / here's the thing</strong></div></div>
+  </div>
+</div>
+
+<!-- EXPRESSIONS -->
+<div class="page" id="page-expressions">
+  <div class="page-header">
+    <div class="page-title">표현 사전</div>
+    <div class="page-subtitle">실제 수업에서 추출한 한국식 → 자연스러운 영어</div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🔴 구조 직역</div>
+    <div class="expr-item"><div class="expr-korean">starting point making me interested</div><div class="expr-arrow">→</div><div class="expr-english">what sparked my interest / what got me into</div><div class="expr-note">한국어 '계기가 된 것' 직역. 영어는 동사 중심.</div></div>
+    <div class="expr-item"><div class="expr-korean">I have passion to ~</div><div class="expr-arrow">→</div><div class="expr-english">I'm passionate about ~ / I've always had a thing for ~</div><div class="expr-note">passion은 명사. 'have passion to V' 구조는 어색.</div></div>
+    <div class="expr-item"><div class="expr-korean">what makes me hard is</div><div class="expr-arrow">→</div><div class="expr-english">what I find challenging is / the tough part for me is</div><div class="expr-note">'나를 힘들게 하는 것' → 영어는 주어가 I.</div></div>
+    <div class="expr-item"><div class="expr-korean">It is very burdening</div><div class="expr-arrow">→</div><div class="expr-english">It's a heavy burden / it weighs on me</div><div class="expr-note">burdening은 형용사로 거의 안 씀.</div></div>
+    <div class="expr-item"><div class="expr-korean">I happened to get into this job</div><div class="expr-arrow">→</div><div class="expr-english">I fell into this job / I stumbled into it</div><div class="expr-note">우연히 ~하게 됐다 = fall into / stumble into</div></div>
+    <div class="expr-item"><div class="expr-korean">sorted put</div><div class="expr-arrow">→</div><div class="expr-english">sorted out / addressed / ironed out</div><div class="expr-note">'sorted put'은 없는 표현. sorted out이 맞음.</div></div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🟡 동사 선택</div>
+    <div class="expr-item"><div class="expr-korean">dealing with the project (부정적 뉘앙스 없을 때)</div><div class="expr-arrow">→</div><div class="expr-english">working on / handling</div><div class="expr-note">deal with = 부정적 함의. 싫지 않은 일엔 work on.</div></div>
+    <div class="expr-item"><div class="expr-korean">composed of (과다 사용)</div><div class="expr-arrow">→</div><div class="expr-english">consists of / is made up of / comprises</div><div class="expr-note">다양하게 섞어서 쓰기.</div></div>
+    <div class="expr-item"><div class="expr-korean">pick up one company (선택하다)</div><div class="expr-arrow">→</div><div class="expr-english">selects / backs / supports / chooses to fund</div><div class="expr-note">pick up은 물건 집을 때.</div></div>
+  </div>
+  <div class="expr-section">
+    <div class="expr-section-title">🟢 비즈니스 / MBA</div>
+    <div class="expr-item"><div class="expr-korean">agree with you</div><div class="expr-arrow">→</div><div class="expr-english">I concur / I second that / I'm with you on that</div><div class="expr-note">비즈니스 세팅에서 더 세련됨.</div></div>
+    <div class="expr-item"><div class="expr-korean">That's the same for me</div><div class="expr-arrow">→</div><div class="expr-english">Likewise / I'm in the same boat / Same here</div><div class="expr-note">캐주얼 동조 표현.</div></div>
+    <div class="expr-item"><div class="expr-korean">I realized this area fits me</div><div class="expr-arrow">→</div><div class="expr-english">I realized I was cut out for this</div><div class="expr-note">be cut out for = ~에 적합하다.</div></div>
+    <div class="expr-item"><div class="expr-korean">those efforts made the company profit</div><div class="expr-arrow">→</div><div class="expr-english">those efforts paid off / they're reaping the rewards</div><div class="expr-note">pay off / reap rewards = 노력이 결실을 맺다.</div></div>
+  </div>
+  <!-- 수업 분석에서 추가된 표현 (동적) -->
+  <div id="expressions-from-lessons" style="display:none;margin-bottom:24px"></div>
+
+  <div class="expr-section">
+    <div class="expr-section-title">💬 캐주얼 — 동료 대화</div>
+    <div class="expr-item"><div class="expr-korean">합의 도출이 매우 어렵다</div><div class="expr-arrow">→</div><div class="expr-english">like herding cats</div><div class="expr-note">이디엄: 고양이 떼를 몰듯 — 합의가 매우 어렵다.</div></div>
+    <div class="expr-item"><div class="expr-korean">처음부터</div><div class="expr-arrow">→</div><div class="expr-english">from the get-go</div><div class="expr-note">캐주얼. "from the beginning"의 구어체.</div></div>
+    <div class="expr-item"><div class="expr-korean">나도 똑같은 상황이야</div><div class="expr-arrow">→</div><div class="expr-english">I'm in the same boat</div><div class="expr-note">공감 표현.</div></div>
+    <div class="expr-item"><div class="expr-korean">그게 바로 문제야</div><div class="expr-arrow">→</div><div class="expr-english">that's the thing / here's the thing</div><div class="expr-note">요점 강조할 때.</div></div>
+    <div class="expr-item"><div class="expr-korean">정신이 없다</div><div class="expr-arrow">→</div><div class="expr-english">I'm all over the place</div><div class="expr-note">바쁘고 정신없는 상태.</div></div>
+    <div class="expr-item"><div class="expr-korean">좀 쉬고 싶다</div><div class="expr-arrow">→</div><div class="expr-english">I could use a breather</div><div class="expr-note">'I need a break'의 자연스러운 대체.</div></div>
+  </div>
+</div>
+
+<!-- DRILL -->
+<div class="page" id="page-drill">
+  <div class="page-header">
+    <div class="page-title">드릴 연습</div>
+    <div class="page-subtitle">직접 영어로 입력하고 Claude가 채점</div>
+  </div>
+
+  <div class="drill-progress" id="drill-progress">1 / 15</div>
+
+  <div class="drill-card" id="drill-card">
+    <div class="drill-prompt-label">이 표현을 자연스러운 영어로 써보세요</div>
+    <div class="drill-korean" id="drill-korean">로딩 중...</div>
+    <input class="drill-input" id="drill-input" type="text" placeholder="영어로 입력..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="drill-feedback" id="drill-feedback"></div>
+    <div class="drill-model" id="drill-model"></div>
+    <div class="drill-note" id="drill-note"></div>
+  </div>
+
+  <div class="drill-controls">
+    <button class="btn btn-primary" id="drill-submit-btn" onclick="submitDrill()">제출</button>
+    <button class="btn" id="drill-next-btn" onclick="nextDrill()" style="display:none">다음 →</button>
+    <button class="btn" id="drill-skip-btn" onclick="skipDrill()" style="color:var(--text3)">건너뛰기</button>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">세션 현황</div>
+    <div style="display:flex;gap:24px;font-size:13px;margin-bottom:12px">
+      <span style="color:var(--green)">✓ 맞음: <strong id="drill-correct">0</strong></span>
+      <span style="color:var(--red)">✗ 틀림: <strong id="drill-wrong">0</strong></span>
+      <span style="color:var(--text3)">남음: <strong id="drill-remaining">15</strong></span>
+    </div>
+    <div id="drill-wrongs-preview" style="display:none">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">이번 세션 오답</div>
+      <div id="drill-wrongs-list"></div>
+    </div>
+  </div>
+
+  <div class="card" id="drill-wrong-bank" style="display:none">
+    <div class="card-title">📚 누적 오답 — 다음 수업 인풋</div>
+    <div id="drill-wrong-bank-list"></div>
+    <button class="btn" id="clear-wrongs-btn" onclick="clearWrongBank()" style="margin-top:12px;color:var(--red);border-color:rgba(201,106,90,.3);font-size:12px">오답 초기화</button>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="page" id="page-upload">
+  <div class="page-header">
+    <div class="page-title">수업 분석</div>
+    <div class="page-subtitle">PDF · 스크립트 · 미팅 메모 분석</div>
+  </div>
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('pdf',this)">📄 PDF 분석</button>
+    <button class="tab-btn" onclick="switchTab('memo',this)">💬 미팅 메모</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-pdf">
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;line-height:1.6">
+      수업 PDF 두 개를 올려주세요. <strong style="color:var(--text2)">피드백 문서 + 스크립트</strong>를 함께 분석해서 튜터가 지적한 것과 놓친 것을 모두 잡아드릴게요.
+    </p>
+
+    <div class="upload-zone" id="zone-feedback"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropDual(event,'feedback')"
+         onclick="document.getElementById('file-feedback').click()">
+      <div class="upload-icon" id="icon-feedback">📝</div>
+      <div class="upload-text" id="text-feedback">튜터 피드백 문서 PDF</div>
+      <div class="upload-hint" id="hint-feedback">Tutor's Editing Place가 있는 문서</div>
+      <input type="file" id="file-feedback" accept=".pdf" style="display:none" onchange="loadDualFile(this.files[0],'feedback')">
+    </div>
+
+    <div class="upload-zone" id="zone-script" style="margin-top:10px"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropDual(event,'script')"
+         onclick="document.getElementById('file-script').click()">
+      <div class="upload-icon" id="icon-script">🎙</div>
+      <div class="upload-text" id="text-script">수업 스크립트 PDF</div>
+      <div class="upload-hint" id="hint-script">녹음 트랜스크립트 문서 (선택)</div>
+      <input type="file" id="file-script" accept=".pdf" style="display:none" onchange="loadDualFile(this.files[0],'script')">
+    </div>
+
+    <button class="btn btn-primary" id="analyze-dual-btn" onclick="analyzeDualPDF()" style="margin-top:14px;width:100%" disabled>
+      두 PDF 합쳐서 분석하기
+    </button>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;font-family:var(--mono)">
+      피드백 문서만 있어도 분석 가능 · 스크립트는 선택
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-memo">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">미팅 / 대화 메모</div>
+      <div class="input-group">
+        <label class="input-label">내가 쓴 표현 (어색했던 것 위주)</label>
+        <textarea class="input textarea" id="memo-input" placeholder="예: I have passion to develop my career in energy sector..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="analyzeMemo()">분석하기</button>
+    </div>
+  </div>
+
+  <div id="analyze-loading" style="display:none;margin-top:16px"><div class="loading"><div class="spinner"></div>Claude가 분석 중입니다...</div></div>
+  <div id="analysis-result" class="analysis-result">
+    <div class="card-title" id="result-title" style="margin-bottom:14px">분석 결과</div>
+    <div id="result-content"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div class="page-title">수업 기록</div>
+    <div class="page-subtitle">분석된 수업 타임라인</div>
+  </div>
+  <div class="card">
+    <div class="card-title">최근 수업</div>
+    <div id="history-list">
+      <div class="timeline-item"><div class="timeline-date">2026.04.28</div><div class="timeline-content"><div class="timeline-topic">에너지 산업 / SMR 정책</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">관사 3건</span><span class="err-tag" style="color:var(--red)">safely→safety</span><span class="err-tag" style="color:var(--amber)">adjure→agile</span></div></div></div>
+      <div class="timeline-item"><div class="timeline-date">2026.04.19</div><div class="timeline-content"><div class="timeline-topic">비즈니스 컨설팅 / 직업 소개</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">직역 5건</span><span class="err-tag" style="color:var(--amber)">burdening→burden</span><span class="err-tag" style="color:var(--green)">fell into (개선)</span></div></div></div>
+      <div class="timeline-item"><div class="timeline-date">2026.04.04</div><div class="timeline-content"><div class="timeline-topic">인천 / 서울 생활</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">located on→in</span><span class="err-tag" style="color:var(--amber)">much much→significantly</span></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div class="page-title">설정</div>
+    <div class="page-subtitle">API 연결 및 앱 설정</div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">Claude API 키</div>
+    <div class="input-group">
+      <label class="input-label">Anthropic API Key</label>
+      <input type="password" class="input" id="api-key-input" placeholder="sk-ant-...">
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="saveApiKey()">저장</button>
+      <button class="btn" onclick="testApiKey()">연결 테스트</button>
+      <div id="key-status" style="font-size:12px;font-family:var(--mono);color:var(--text3)"></div>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--text3);line-height:1.7">
+      API 키는 이 브라우저에만 저장됩니다.<br>
+      발급: <a href="https://console.anthropic.com" style="color:var(--accent)">console.anthropic.com</a><br>
+      분석 1회 비용 ≈ ₩5~15
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">데이터 관리</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" onclick="exportData()">데이터 내보내기</button>
+      <button class="btn" onclick="clearData()" style="color:var(--red);border-color:rgba(201,106,90,.3)">초기화</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-title">앱 정보</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.8;font-family:var(--mono)">
+      버전: 1.2.0<br>모델: claude-sonnet-4-6<br>저장: 브라우저 localStorage<br>누적 수업: <span id="total-sessions">29</span>회
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="nav('dashboard',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>홈
+  </button>
+  <button class="bnav-item" onclick="nav('daily',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2v16M2 10h16"/></svg>오늘
+  </button>
+  <button class="bnav-item" onclick="nav('drill',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 10l4 4 8-8"/></svg>드릴
+  </button>
+  <button class="bnav-item" onclick="nav('upload',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5m0 0L7 8m3-3l3 3"/><path d="M4 16h12"/></svg>분석
+  </button>
+  <button class="bnav-item" onclick="nav('settings',this)">
+    <svg class="bnav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2"/></svg>설정
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY='eng_v2', API_KEY_S='eng_api_key', DAILY_KEY='eng_daily';
+const BASE_SESSIONS = 29; // 앱 초기 기준 수업 수
+
+let apiKey='', sessions=[], diaryEntries=[];
+let drillCorrect=0, drillWrong=0, drillIndex=0, drillAnswered=false, drillQueue=[];
+let drillWrongBank=[];
+
+const SENTENCE_POOL=[
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"I fell into consulting, and it turned out I was completely cut out for it.",korean:"나는 우연히 컨설팅을 시작하게 됐고, 알고 보니 완전히 적성에 맞았어.",note:"'fell into' = 우연히 ~하게 됐다. 내가 자주 쓰던 'happened to get into'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"What I find most challenging is managing the complex dynamics between our team and the client.",korean:"내가 가장 어렵다고 느끼는 건 팀과 클라이언트 사이의 복잡한 역학관계를 관리하는 거야.",note:"'What I find challenging' — 내가 자주 쓰던 'what makes me hard is'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"The advantages are that each side brings its own expertise.",korean:"각 측이 고유한 전문성을 가져온다는 게 장점이야.",note:"'The advantages are' — 복수 주어엔 복수 동사. 'The pros is' 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"I'm passionate about working in the energy sector and exploring its global dynamics.",korean:"나는 에너지 섹터에서 일하고 그 글로벌 역학을 탐구하는 것에 열정을 갖고 있어.",note:"'I'm passionate about' — 내가 쓰던 'I have passion to'의 교정."},
+  {type:'correction',badge:'🔴 오류 교정',badgeClass:'tag-red',english:"It weighs on me that every stakeholder has a different take on the project.",korean:"모든 이해관계자가 프로젝트에 대해 다른 시각을 갖고 있다는 게 부담스러워.",note:"'It weighs on me' — 내가 썼던 'it is very burdening'의 교정."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"We need to strike a balance between moving fast and making sure the process is airtight.",korean:"빠르게 움직이는 것과 프로세스를 철저히 하는 것 사이의 균형을 잡아야 해.",note:"'strike a balance' — MBA 인터뷰에서도 자주 쓰이는 표현."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"I concur — the regulatory environment is going to be the biggest bottleneck here.",korean:"동의해 — 규제 환경이 여기서 가장 큰 병목이 될 거야.",note:"'I concur' — 'I agree'보다 격식 있고 세련된 표현."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"In my role, I have to wear many hats — strategy, client management, and market research.",korean:"내 역할에서는 전략, 클라이언트 관리, 시장 조사까지 다양한 역할을 해야 해.",note:"'wear many hats' — 여러 역할을 담당한다는 뜻."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"Those late nights are finally paying off — the client loved the presentation.",korean:"그 밤샘 작업들이 드디어 결실을 맺었어 — 클라이언트가 발표를 엄청 좋아했어.",note:"'paying off' — 노력이 결실을 맺다."},
+  {type:'business',badge:'💼 비즈니스',badgeClass:'tag-purple',english:"The bottom line is that without government backing, the SMR rollout will take twice as long.",korean:"결론적으로 정부 지원 없이는 SMR 도입이 두 배는 오래 걸릴 거야.",note:"'the bottom line is' — 결론을 내릴 때."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Getting all the stakeholders to agree was like herding cats — total chaos.",korean:"모든 이해관계자들 동의시키는 게 정말 난장판이었어.",note:"'herding cats' = 합의 도출이 매우 어렵다."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"I'm in the same boat — my schedule has been absolutely crazy this week.",korean:"나도 완전 똑같아 — 이번 주 스케줄이 미칠 것 같았어.",note:"'I'm in the same boat' — 같은 상황이야."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Here's the thing — I actually enjoy the chaos once I'm in the middle of it.",korean:"있잖아 — 사실 한가운데에 있으면 그 혼란이 재밌거든.",note:"'here's the thing' — 요점을 꺼낼 때."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"I've been all over the place lately — work, MBA prep, and trying to have a life.",korean:"요즘 너무 정신없어 — 일, MBA 준비, 그리고 나만의 시간도 만들어보려고.",note:"'all over the place' = 정신없다."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"From the get-go, I knew this project was going to be way more complex than it looked.",korean:"처음부터 이 프로젝트가 보이는 것보다 훨씬 복잡할 거라는 걸 알았어.",note:"'from the get-go' = 처음부터."},
+  {type:'casual',badge:'💬 캐주얼',badgeClass:'tag-teal',english:"Honestly, I could use a breather — it's been non-stop for the past month.",korean:"솔직히 좀 쉬고 싶어 — 지난 한 달이 쉬지 않고 달려온 거야.",note:"'could use a breather' = 좀 쉬고 싶다."},
+];
+
+const DRILLS=[
+  {korean:"starting point making me interested in music",english:"what sparked my interest in music / what got me into music",note:"한국어 '계기가 된 것' 구조 직역. 영어는 동사 중심으로."},
+  {korean:"I have passion to develop my career",english:"I'm passionate about developing my career",note:"passion은 명사. 'have passion to V' 구조는 어색함."},
+  {korean:"what makes me hard is the complicated dynamics",english:"what I find challenging is the complicated dynamics",note:"'나를 힘들게 하는 것' → 영어는 주어가 I인 구조."},
+  {korean:"It is very burdening to manage multiple stakeholders",english:"It's a heavy burden / It weighs on me",note:"burdening은 형용사로 거의 쓰이지 않음."},
+  {korean:"I happened to get into consulting",english:"I fell into consulting / I stumbled into consulting",note:"우연히 ~하게 됐다 = fall into / stumble into"},
+  {korean:"The pros is they have their own expertise",english:"One advantage is that they have their own expertise",note:"복수 주어 pros는 복수 동사. 단수로 쓸 땐 'one advantage'."},
+  {korean:"dealing with an energy project (부정적 뉘앙스 없을 때)",english:"working on an energy project / handling an energy project",note:"deal with는 부정적 뉘앙스. 싫지 않은 일엔 work on."},
+  {korean:"That's the same for me",english:"Likewise / I'm in the same boat / Same here",note:"캐주얼 대화에서 자연스러운 동조 표현."},
+  {korean:"agree with you on this point",english:"I concur / I second that / I'm with you on that",note:"비즈니스 세팅에서 agree 대신 쓰면 더 세련됨."},
+  {korean:"my clients are across many industries",english:"I wear many hats / I work across diverse sectors",note:"wear many hats = 다양한 역할을 담당하다."},
+  {korean:"I realized this area fits me well",english:"I realized I was cut out for this kind of work",note:"be cut out for = ~에 적합하다."},
+  {korean:"those efforts will make the company profit",english:"those efforts appear to be paying off / reaping the rewards",note:"pay off / reap rewards = 노력이 결실을 맺다."},
+  {korean:"this issue could be sorted put",english:"this issue could be sorted out / addressed / ironed out",note:"'sorted put'은 없는 표현. sorted out이 맞음."},
+  {korean:"it is not that realized yet (기술이)",english:"it hasn't taken off yet / it's still in its early stages",note:"realize는 '깨닫다' 뜻. 기술 실현은 다른 표현."},
+  {korean:"I don't have enough brain ability",english:"I don't have the bandwidth / my brain is just fried",note:"brain ability는 어색. bandwidth(여유) 또는 capacity."},
+];
+
+// ── 에러 타입 분류 헬퍼 ────────────────────────────────
+function classifyErrors(errors){
+  const types = {article:0, translation:0, connector:0, verb:0, other:0};
+  (errors||[]).forEach(e => {
+    const t = (e.type||'other').toLowerCase();
+    if(types[t] !== undefined) types[t]++;
+    else types.other++;
+  });
+  return types;
+}
+
+// ── 대시보드 업데이트 ─────────────────────────────────
+function updateDashboard(parsed, isRestore=false){
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  // 1. 총 수업 수
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  // 2. 정체 오류 / 개선 영역 — 전체 sessions 누적 기반
+  const allSessionErrors = sessions.flatMap(s => [
+    ...(s.tutor_corrections||[]),
+    ...(s.tutor_missed_errors||[]),
+    ...(s.recurring_errors_found||[]),
+    ...(s.key_errors||[]),
+  ]);
+  const typesAll = classifyErrors(allSessionErrors);
+  const stagnant = (typesAll.article||0) + (typesAll.translation||0) + (typesAll.connector||0);
+  const improving = (typesAll.verb||0) + (typesAll.other||0);
+
+  if(stagnant > 0){
+    document.getElementById('stat-stagnant').textContent = stagnant;
+    const stagnantLabels = [];
+    if(typesAll.article) stagnantLabels.push('관사');
+    if(typesAll.translation) stagnantLabels.push('직역');
+    if(typesAll.connector) stagnantLabels.push('연결어');
+    document.getElementById('stat-stagnant-sub').textContent = stagnantLabels.join('·') || '관사·직역·연결어';
+  }
+
+  if(improving > 0){
+    document.getElementById('stat-improving').textContent = improving;
+  }
+
+  // 3. "오늘 의식할 것" — 최근 수업 과제를 맨 위에 삽입
+  const briefingList = document.getElementById('dashboard-briefing-list');
+  if(parsed.briefing_for_next && briefingList){
+    // 이전에 추가된 최근 수업 아이템이 있으면 제거
+    const existing = briefingList.querySelector('.from-lesson');
+    if(existing) existing.remove();
+
+    const newItem = document.createElement('div');
+    newItem.className = 'briefing-item from-lesson';
+    newItem.style.cssText = 'border-color:rgba(200,185,122,.4);order:-1;';
+    newItem.innerHTML = `<span class="briefing-tag tag-amber">최근 수업</span><div class="briefing-text">${parsed.briefing_for_next}</div>`;
+    briefingList.insertAdjacentElement('afterbegin', newItem);
+  }
+
+  // 4. 대시보드 "반복 오류" — 이번 수업 오류가 있으면 상위에 추가
+  if(allErrors.length > 0){
+    const errorList = document.getElementById('dashboard-error-list');
+    // 이전 것 제거
+    errorList.querySelectorAll('.from-lesson').forEach(el => el.remove());
+
+    allErrors.slice(0, 2).forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'from-lesson';
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      div.innerHTML = `<div class="error-header"><span class="error-name">${e.original||''}</span><span style="font-size:11px;font-family:var(--mono);color:${color}">이번 수업</span></div><div class="bar-bg"><div class="bar-fill" style="width:85%;background:${color}"></div></div><div class="error-trend" style="color:${color}">→ 확인 필요</div>`;
+      errorList.insertAdjacentElement('afterbegin', div);
+    });
+  }
+
+  // 5. 대시보드 "최근 수업 분석 결과" 카드 표시
+  const latestCard = document.getElementById('dashboard-latest-lesson');
+  const latestContent = document.getElementById('dashboard-latest-content');
+  if(latestCard && latestContent && allErrors.length > 0){
+    latestCard.style.display = 'block';
+    let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:10px">📅 ${new Date().toISOString().slice(0,10)} · ${parsed.session_topic||'수업 분석'}</div>`;
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">`;
+    allErrors.slice(0,4).forEach(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)' : 'var(--amber)';
+      html += `<span style="font-size:11px;font-family:var(--mono);padding:2px 8px;border-radius:4px;background:rgba(255,255,255,.05);color:${color}">${e.original||''} → ${e.corrected||''}</span>`;
+    });
+    html += `</div>`;
+    if(parsed.briefing_for_next){
+      html += `<div style="font-size:12px;color:var(--accent);padding:8px 10px;background:rgba(200,185,122,.08);border-radius:6px;border-left:2px solid var(--accent)">👉 ${parsed.briefing_for_next}</div>`;
+    }
+    latestContent.innerHTML = html;
+  }
+
+  // 6. 수업 기록(history) 탭 업데이트 — 새 분석 때만
+  if(!isRestore) updateHistoryList(parsed);
+
+  // 7. 설정 페이지 총 수업 수
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
+// ── 수업 기록 전체 렌더링 ────────────────────────────
+function updateHistoryList(parsed){
+  // 새 분석 후 호출 — sessions에 이미 추가된 상태이므로 전체 재렌더링
+  renderHistoryList();
+}
+
+function renderHistoryList(){
+  const list = document.getElementById('history-list');
+  if(!list) return;
+
+  if(!sessions.length){
+    list.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:12px 0">아직 분석된 수업이 없어요.</div>';
+    return;
+  }
+
+  // 하드코딩된 초기 수업 3개 + sessions 배열 합쳐서 렌더링
+  const hardcodedHTML = `
+    <div class="timeline-item"><div class="timeline-date">2026.04.28</div><div class="timeline-content"><div class="timeline-topic">에너지 산업 / SMR 정책</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">관사 3건</span><span class="err-tag" style="color:var(--red)">safely→safety</span><span class="err-tag" style="color:var(--amber)">adjure→agile</span></div></div></div>
+    <div class="timeline-item"><div class="timeline-date">2026.04.19</div><div class="timeline-content"><div class="timeline-topic">비즈니스 컨설팅 / 직업 소개</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">직역 5건</span><span class="err-tag" style="color:var(--amber)">burdening→burden</span><span class="err-tag" style="color:var(--green)">fell into (개선)</span></div></div></div>
+    <div class="timeline-item"><div class="timeline-date">2026.04.04</div><div class="timeline-content"><div class="timeline-topic">인천 / 서울 생활</div><div class="timeline-errors"><span class="err-tag" style="color:var(--red)">located on→in</span><span class="err-tag" style="color:var(--amber)">much much→significantly</span></div></div></div>
+  `;
+
+  const sessionHTML = sessions.map(s => {
+    const allErrors = [
+      ...(s.tutor_corrections||[]),
+      ...(s.tutor_missed_errors||[]),
+      ...(s.recurring_errors_found||[]),
+      ...(s.key_errors||[]),
+    ];
+    const dateStr = (s.date||'').replace(/-/g, '.');
+    const topic = s.session_topic || '수업';
+    const tags = allErrors.slice(0,3).map(e => {
+      const color = (e.type==='article'||e.type==='translation') ? 'var(--red)'
+        : (e.type==='connector'||e.type==='verb') ? 'var(--amber)'
+        : 'var(--text3)';
+      const label = e.original ? `${e.original.slice(0,12)}→${(e.corrected||'').slice(0,12)}` : '';
+      return `<span class="err-tag" style="color:${color}">${label}</span>`;
+    }).join('');
+
+    return `<div class="timeline-item" style="border-top:2px solid rgba(200,185,122,.15)">
+      <div class="timeline-date">${dateStr}</div>
+      <div class="timeline-content">
+        <div class="timeline-topic">${topic}</div>
+        <div class="timeline-errors">${tags}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML = sessionHTML + hardcodedHTML;
+}
+
+// ── 초기화 ────────────────────────────────────────────
+function init(){
+  apiKey = localStorage.getItem(API_KEY_S)||'';
+  document.getElementById('api-key-input').value = apiKey;
+  updateApiStatus(!!apiKey);
+
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    sessions = s.sessions||[];
+    diaryEntries = s.diaryEntries||[];
+  }catch(e){}
+
+  try{ drillWrongBank = JSON.parse(localStorage.getItem('drill_wrongs')||'[]'); }catch(e){}
+
+  // 총 수업 수 반영
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+
+  shuffleDrill(); loadDrill();
+  loadDailyInfo(); renderDiaryHistory(); updateStreak();
+  renderWrongBank();
+  renderHistoryList();
+  renderExpressions();
+  restoreRecentLesson();
+}
+
+function updateApiStatus(ok){
+  document.getElementById('api-dot').className = 'api-dot'+(ok?' ok':'');
+  document.getElementById('api-status-text').textContent = ok?'API 연결됨':'API 미연결';
+}
+
+function nav(page, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function switchTab(name, el){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key){toast('API 키를 입력해주세요.');return;}
+  localStorage.setItem(API_KEY_S, key); apiKey=key; updateApiStatus(true); toast('저장됐어요!');
+}
+
+async function testApiKey(){
+  const key = document.getElementById('api-key-input').value.trim()||apiKey;
+  if(!key){toast('API 키를 먼저 입력해주세요.');return;}
+  const st = document.getElementById('key-status');
+  st.textContent='테스트 중...'; st.style.color='var(--text3)';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'hi'}]})});
+    if(r.ok){st.textContent='✓ 연결 성공';st.style.color='var(--green)';apiKey=key;updateApiStatus(true);}
+    else{st.textContent='✗ 키 오류';st.style.color='var(--red)';}
+  }catch(e){st.textContent='✗ 네트워크 오류';st.style.color='var(--red)';}
+}
+
+// ── Daily Sentence ────────────────────────────────────
+function loadDailyInfo(){
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('s-date').textContent = today;
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  if(saved.date===today && saved.sentence) renderSentence(saved.sentence);
+  else pickDailySentence();
+}
+
+function pickDailySentence(){
+  const roll = Math.random();
+  let pool;
+  if(roll<0.4) pool = SENTENCE_POOL.filter(s=>s.type==='correction');
+  else if(roll<0.7) pool = SENTENCE_POOL.filter(s=>s.type==='business');
+  else pool = SENTENCE_POOL.filter(s=>s.type==='casual');
+  const picked = pool[Math.floor(Math.random()*pool.length)];
+  localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:picked}));
+  renderSentence(picked);
+}
+
+function renderSentence(s){
+  const badge = document.getElementById('s-type-badge');
+  badge.textContent = s.badge; badge.className = 'sentence-type briefing-tag '+s.badgeClass;
+  document.getElementById('s-english').textContent = s.english;
+  document.getElementById('s-korean').textContent = s.korean;
+  document.getElementById('s-note').textContent = s.note;
+}
+
+async function generateDailySentence(){
+  if(!apiKey){pickDailySentence();toast('풀에서 새 문장을 뽑았어요!');return;}
+  const btn = document.getElementById('gen-btn');
+  btn.disabled=true; btn.textContent='생성 중...';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Create a daily English sentence for a Korean business consultant who: makes article/plural errors, translates Korean structures directly (starting point making me, I have passion to, what makes me hard is), overuses "so" as connector, and is preparing for MBA. Mix randomly between: correction of her errors, business/MBA expression, or casual colleague small talk. Return JSON only: {"type":"correction|business|casual","badge":"🔴 오류 교정|💼 비즈니스|💬 캐주얼","badgeClass":"tag-red|tag-purple|tag-teal","english":"sentence","korean":"한국어 번역","note":"왜 유용한지 한국어 한 줄"}`}]})});
+    const data = await r.json();
+    const s = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    localStorage.setItem(DAILY_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),sentence:s}));
+    renderSentence(s); toast('새 문장이 생성됐어요!');
+  }catch(e){pickDailySentence();toast('풀에서 문장을 뽑았어요.');}
+  btn.disabled=false;
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8A5 5 0 1 1 3 8"/><path d="M13 4v4h-4"/></svg> 새 문장 생성';
+}
+
+async function checkDiary(){
+  const text = document.getElementById('diary-input').value.trim();
+  if(!text){toast('문장을 먼저 써보세요.');return;}
+  if(!apiKey){toast('설정에서 API 키를 입력해주세요.');return;}
+  document.getElementById('diary-loading').style.display='block';
+  document.getElementById('diary-feedback').style.display='none';
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  const target = saved.sentence?.english||'';
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:250,messages:[{role:'user',content:`A Korean learner wrote: "${text}". Today's target expression: "${target}". Give warm, brief feedback in Korean (2-3 sentences): fix 1-2 issues if any, praise good use of target expression, one encouragement. Natural Korean sentences, no lists.`}]})});
+    const data = await r.json();
+    const fb = document.getElementById('diary-feedback');
+    fb.textContent = data.content.map(i=>i.text||'').join(''); fb.style.display='block';
+  }catch(e){toast('피드백 요청 실패.');}
+  document.getElementById('diary-loading').style.display='none';
+}
+
+function saveDiaryEntry(){
+  const text = document.getElementById('diary-input').value.trim();
+  if(!text){toast('먼저 문장을 써보세요.');return;}
+  const saved = JSON.parse(localStorage.getItem(DAILY_KEY)||'{}');
+  diaryEntries.unshift({date:new Date().toISOString().slice(0,10),entry:text,sentence:saved.sentence?.english||''});
+  if(diaryEntries.length>60) diaryEntries=diaryEntries.slice(0,60);
+  saveState(); renderDiaryHistory();
+  document.getElementById('diary-input').value='';
+  document.getElementById('diary-feedback').style.display='none';
+  updateStreak(); toast('저장됐어요! 🎉');
+}
+
+function renderDiaryHistory(){
+  const list = document.getElementById('diary-history-list');
+  if(!diaryEntries.length){list.innerHTML='<span style="font-size:13px;color:var(--text3)">아직 저장된 일기가 없어요.</span>';return;}
+  list.innerHTML = diaryEntries.slice(0,5).map(e=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
+      <div style="font-size:13px;color:var(--text);margin-bottom:4px">${e.entry}</div>
+      ${e.sentence?`<div style="font-size:11px;color:var(--text3)">📌 ${e.sentence.slice(0,50)}...</div>`:''}
+    </div>`).join('')+(diaryEntries.length>5?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${diaryEntries.length-5}개 더</div>`:'');
+}
+
+function updateStreak(){
+  if(!diaryEntries.length){document.getElementById('streak-val').textContent=0;return;}
+  let streak=0, d=new Date();
+  for(let i=0;i<60;i++){
+    const ds = d.toISOString().slice(0,10);
+    if(diaryEntries.find(e=>e.date===ds)){streak++;d.setDate(d.getDate()-1);}
+    else{if(i===0){d.setDate(d.getDate()-1);continue;}break;}
+  }
+  document.getElementById('streak-val').textContent=streak;
+}
+
+// ── Upload — dual PDF ────────────────────────────────
+const dualFiles = {feedback:null, script:null};
+
+function dragOver(e){e.preventDefault();e.currentTarget.classList.add('dragover');}
+function dragLeave(e){e.currentTarget.classList.remove('dragover');}
+
+function dropDual(e, type){
+  e.preventDefault(); e.currentTarget.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if(f?.type==='application/pdf') loadDualFile(f, type);
+  else toast('PDF 파일만 가능합니다.');
+}
+
+function loadDualFile(file, type){
+  if(!file) return;
+  dualFiles[type] = file;
+  document.getElementById('icon-'+type).textContent = '✅';
+  document.getElementById('text-'+type).textContent = file.name.slice(0,30)+(file.name.length>30?'...':'');
+  document.getElementById('hint-'+type).textContent = Math.round(file.size/1024)+'KB';
+  document.getElementById('zone-'+type).style.borderColor = 'var(--green)';
+
+  const btn = document.getElementById('analyze-dual-btn');
+  if(dualFiles.feedback){
+    btn.disabled = false;
+    btn.textContent = dualFiles.script ? '두 PDF 합쳐서 분석하기' : '피드백 PDF만 분석하기';
+  }
+}
+
+async function analyzeDualPDF(){
+  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
+  if(!dualFiles.feedback){toast('튜터 피드백 PDF를 먼저 올려주세요.');return;}
+  showLoading(true); showResult(false);
+
+  function toBase64(file){
+    return new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=e=>res(e.target.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  try{
+    const feedbackB64 = await toBase64(dualFiles.feedback);
+    const scriptB64 = dualFiles.script ? await toBase64(dualFiles.script) : null;
+
+    const knownErrors = `This learner's known recurring errors:
+1) Article/plural: "the pros is", "every items", "very many knowledge"
+2) Korean direct translation: "starting point making me interested", "I have passion to", "what makes me hard is", "it is very burdening", "happened to get into"
+3) Connector overuse: repeating "so" instead of while/whereas/that said
+4) Verb nuance: "deal with" (negative connotation when not intended), "composed of" (overused)`;
+
+    const contentArr = [
+      {type:'document', source:{type:'base64', media_type:'application/pdf', data:feedbackB64}},
+    ];
+    if(scriptB64) contentArr.push({type:'document', source:{type:'base64', media_type:'application/pdf', data:scriptB64}});
+
+    const promptText = scriptB64
+      ? `You are analyzing TWO PDFs from a Ringle English tutoring session for a Korean business consultant.
+Document 1: Tutor's feedback/editing document (corrections the tutor made)
+Document 2: Lesson transcript (full conversation script)
+
+${knownErrors}
+
+Analyze BOTH documents together and return:
+- Errors the tutor corrected (from doc 1)
+- Errors the tutor MISSED that appear in doc 2
+- Known recurring patterns that still appear
+- Any improvements vs typical patterns
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "tutor_missed_errors": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": ["개선된 점"],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`
+      : `You are analyzing a Ringle tutoring feedback PDF for a Korean business consultant.
+
+${knownErrors}
+
+Return JSON only:
+{
+  "session_topic": "주제 한국어",
+  "tutor_corrections": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "tutor_missed_errors": [],
+  "recurring_errors_found": [{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],
+  "new_expressions": [{"expression":"expr","meaning_ko":"뜻","example":"ex"}],
+  "improvements_noted": [],
+  "briefing_for_next": "다음 수업 최우선 과제 한 가지"
+}`;
+
+    contentArr.push({type:'text', text:promptText});
+
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,messages:[{role:'user',content:contentArr}]})
+    });
+    const data = await r.json();
+    let rawText = data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd = rawText.lastIndexOf('}');
+    if(jsonStart===-1||jsonEnd===-1) throw new Error('JSON 없음');
+    rawText = rawText.slice(jsonStart, jsonEnd+1);
+    const parsed = JSON.parse(rawText);
+
+    renderDualResult(parsed, !!scriptB64);
+
+    // ✅ 핵심: 세션 저장 → 대시보드/브리핑/드릴 모두 업데이트
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:dualFiles.feedback.name, source:'dual-pdf'});
+    saveState();
+    saveLatestLesson(parsed);
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed);
+
+  }catch(e){toast('분석 실패: '+e.message); console.error(e);}
+  finally{showLoading(false);}
+}
+
+function renderDualResult(p, hasScript){
+  document.getElementById('result-title').textContent = (p.session_topic||'수업 분석')+(hasScript?' — 피드백 + 스크립트':' — 피드백');
+  let html='';
+
+  if(p.tutor_corrections?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">📝 튜터 교정 (${p.tutor_corrections.length}건)</div>`;
+    p.tutor_corrections.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--amber)');});
+    html+='</div>';
+  }
+  if(p.tutor_missed_errors?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">⚠ 튜터가 놓친 오류 (${p.tutor_missed_errors.length}건)</div>`;
+    p.tutor_missed_errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+  if(p.recurring_errors_found?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--red)">🔁 이전 수업과 같은 오류 (${p.recurring_errors_found.length}건)</div>`;
+    p.recurring_errors_found.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko,'var(--red)');});
+    html+='</div>';
+  }
+  if(p.new_expressions?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">✨ 새로운 표현</div>`;
+    p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
+    html+='</div>';
+  }
+  if(p.improvements_noted?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label" style="color:var(--green)">👍 개선된 점</div>${p.improvements_noted.map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:6px">• ${i}</div>`).join('')}</div>`;
+  }
+  if(p.briefing_for_next){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 최우선 과제</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  }
+
+  document.getElementById('result-content').innerHTML = html;
+  showResult(true);
+  toast('분석 완료! 🎉 대시보드가 업데이트됐어요.');
+}
+
+async function analyzeMemo(){
+  const memo = document.getElementById('memo-input').value.trim();
+  if(!memo){toast('내용을 입력해주세요.');return;}
+  if(!apiKey){toast('설정에서 API 키를 먼저 입력해주세요.');return;}
+  showLoading(true); showResult(false);
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`Analyze English from a Korean business consultant. Find awkward/Korean-influenced expressions. Text: "${memo}". Return JSON: {"session_topic":"미팅/대화 메모","tutor_corrections":[],"tutor_missed_errors":[],"recurring_errors_found":[],"key_errors":[{"original":"phrase","corrected":"better","type":"article|translation|connector|verb|other","explanation_ko":"설명"}],"new_expressions":[],"improvements_noted":[],"improvement_note":"피드백","briefing_for_next":"다음 주의점"}`}]})});
+    const data = await r.json();
+    const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    renderPDFResult(parsed);
+    sessions.unshift({...parsed, date:new Date().toISOString().slice(0,10), filename:'memo', source:'memo'});
+    saveState();
+    saveLatestLesson(parsed);
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed);
+  }catch(e){toast('분석 실패: '+e.message);}
+  finally{showLoading(false);}
+}
+
+function renderPDFResult(p){
+  document.getElementById('result-title').textContent = p.session_topic||'분석 결과';
+  let html='';
+  const errors = p.key_errors||p.tutor_corrections||[];
+  if(errors.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">발견된 오류 (${errors.length}건)</div>`;
+    errors.forEach(e=>{html+=errHTML(e.original,e.corrected,e.explanation_ko);});
+    html+='</div>';
+  }
+  if(p.new_expressions?.length){
+    html+=`<div class="analysis-chunk"><div class="chunk-label">새로운 표현</div>`;
+    p.new_expressions.forEach(ex=>{html+=`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="color:var(--accent);font-size:13px;font-weight:500;margin-bottom:4px">${ex.expression}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${ex.meaning_ko}</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">"${ex.example}"</div></div>`;});
+    html+='</div>';
+  }
+  if(p.improvement_note) html+=`<div class="analysis-chunk"><div class="chunk-label">피드백</div><div style="font-size:13px;color:var(--text2)">${p.improvement_note}</div></div>`;
+  if(p.briefing_for_next) html+=`<div class="analysis-chunk"><div class="chunk-label">다음 수업 전 의식할 것</div><div style="font-size:14px;color:var(--accent);font-weight:500;padding:10px 12px;background:rgba(200,185,122,.08);border-radius:8px;border-left:3px solid var(--accent)">${p.briefing_for_next}</div></div>`;
+  document.getElementById('result-content').innerHTML=html;
+  showResult(true); toast('분석 완료!');
+}
+
+function errHTML(original, corrected, note, color='var(--red)'){
+  return`<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="color:${color};font-family:var(--mono);font-size:12px;text-decoration:line-through">${original||''}</span><span style="color:var(--text3)">→</span><span style="color:var(--green);font-family:var(--mono);font-size:12px">${corrected||''}</span></div><div style="font-size:11px;color:var(--text3)">${note||''}</div></div>`;
+}
+
+function showLoading(v){document.getElementById('analyze-loading').style.display=v?'block':'none';}
+function showResult(v){document.getElementById('analysis-result').classList.toggle('visible',v);}
+
+// ── Drill ─────────────────────────────────────────────
+function shuffleDrill(){
+  drillQueue = [...DRILLS].sort(()=>Math.random()-.5);
+  drillIndex=0; drillCorrect=0; drillWrong=0; drillAnswered=false;
+}
+
+function loadDrill(){
+  if(drillIndex>=drillQueue.length){
+    document.getElementById('drill-korean').textContent='세션 완료! 🎉';
+    document.getElementById('drill-input').style.display='none';
+    document.getElementById('drill-submit-btn').style.display='none';
+    document.getElementById('drill-skip-btn').style.display='none';
+    document.getElementById('drill-next-btn').style.display='none';
+    const fb = document.getElementById('drill-feedback');
+    fb.className='drill-feedback correct';
+    fb.textContent=`✓ ${drillCorrect}개 맞음  ✗ ${drillWrong}개 틀림`;
+    fb.style.display='block';
+    document.getElementById('drill-progress').textContent='세션 완료';
+    return;
+  }
+  const item = drillQueue[drillIndex];
+  document.getElementById('drill-korean').textContent=item.korean;
+  document.getElementById('drill-input').value='';
+  document.getElementById('drill-input').className='drill-input';
+  document.getElementById('drill-input').style.display='block';
+  document.getElementById('drill-feedback').style.display='none';
+  document.getElementById('drill-model').style.display='none';
+  document.getElementById('drill-note').style.display='none';
+  document.getElementById('drill-submit-btn').style.display='inline-flex';
+  document.getElementById('drill-submit-btn').disabled=false;
+  document.getElementById('drill-submit-btn').textContent='제출';
+  document.getElementById('drill-next-btn').style.display='none';
+  document.getElementById('drill-skip-btn').style.display='inline-flex';
+  document.getElementById('drill-progress').textContent=`${drillIndex+1} / ${drillQueue.length}`;
+  document.getElementById('drill-remaining').textContent=drillQueue.length-drillIndex;
+  drillAnswered=false;
+  const input = document.getElementById('drill-input');
+  input.onkeydown=e=>{ if(e.key==='Enter'&&!drillAnswered) submitDrill(); };
+  setTimeout(()=>input.focus(), 100);
+}
+
+async function submitDrill(){
+  if(drillAnswered) return;
+  const userAnswer = document.getElementById('drill-input').value.trim();
+  if(!userAnswer){toast('영어로 입력해주세요.');return;}
+
+  drillAnswered=true;
+  const item = drillQueue[drillIndex];
+  const submitBtn = document.getElementById('drill-submit-btn');
+  submitBtn.disabled=true; submitBtn.textContent='채점 중...';
+
+  let isCorrect=false, feedbackText='';
+
+  if(apiKey){
+    try{
+      const r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:
+          `Grade this English answer for a Korean learner.
+Korean prompt: "${item.korean}"
+Model answer(s): "${item.english}"
+Learner's answer: "${userAnswer}"
+
+Is the answer correct or acceptable? Consider meaning and naturalness, not exact wording.
+Return JSON only: {"correct": true/false, "feedback_ko": "한국어로 1-2문장 피드백. 맞으면 칭찬+뉘앙스 팁, 틀리면 어디가 어색한지"}`
+        }]})
+      });
+      const data = await r.json();
+      const parsed = JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+      isCorrect=parsed.correct; feedbackText=parsed.feedback_ko;
+    }catch(e){
+      const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+      isCorrect=keywords.some(k=>userAnswer.toLowerCase().includes(k));
+      feedbackText=isCorrect?'잘했어요!':'다시 한 번 확인해보세요.';
+    }
+  } else {
+    const keywords=item.english.toLowerCase().split(/[\/,\s]+/).filter(w=>w.length>3);
+    isCorrect=keywords.filter(k=>userAnswer.toLowerCase().includes(k)).length>=2;
+    feedbackText=isCorrect?'정답이에요! (API 연결 시 더 정밀한 채점 가능)':'아쉬워요. 모범 답안을 확인해보세요. (API 연결 시 자세한 피드백 가능)';
+  }
+
+  const input=document.getElementById('drill-input');
+  const feedback=document.getElementById('drill-feedback');
+  const model=document.getElementById('drill-model');
+  const note=document.getElementById('drill-note');
+
+  input.className='drill-input '+(isCorrect?'correct':'wrong');
+  feedback.className='drill-feedback '+(isCorrect?'correct':'wrong');
+  feedback.textContent=(isCorrect?'✓ ':'✗ ')+feedbackText;
+  feedback.style.display='block';
+  model.textContent='모범 답안: '+item.english;
+  model.style.display='block';
+  note.textContent=item.note;
+  note.style.display='block';
+
+  if(isCorrect){
+    drillCorrect++;
+    document.getElementById('drill-correct').textContent=drillCorrect;
+  } else {
+    drillWrong++;
+    document.getElementById('drill-wrong').textContent=drillWrong;
+    addToWrongBank(item, userAnswer);
+  }
+
+  submitBtn.style.display='none';
+  document.getElementById('drill-next-btn').style.display='inline-flex';
+}
+
+function nextDrill(){drillIndex++;loadDrill();}
+function skipDrill(){drillIndex++;loadDrill();}
+
+function addToWrongBank(item, userAnswer){
+  const entry={
+    date:new Date().toISOString().slice(0,10),
+    korean:item.korean,
+    modelEnglish:item.english,
+    userAnswer:userAnswer,
+    note:item.note,
+  };
+  drillWrongBank.unshift(entry);
+  if(drillWrongBank.length>30) drillWrongBank=drillWrongBank.slice(0,30);
+  localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
+  renderWrongBank();
+}
+
+function renderWrongBank(){
+  const bank=document.getElementById('drill-wrong-bank');
+  const list=document.getElementById('drill-wrong-bank-list');
+  const preview=document.getElementById('drill-wrongs-preview');
+  const previewList=document.getElementById('drill-wrongs-list');
+
+  if(!drillWrongBank.length){bank.style.display='none';preview.style.display='none';return;}
+
+  bank.style.display='block';
+  list.innerHTML=drillWrongBank.slice(0,8).map(e=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:4px">${e.date}</div>
+      <div style="font-size:13px;color:var(--red);margin-bottom:3px">${e.korean}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:2px">내 답: <span style="font-family:var(--mono)">${e.userAnswer}</span></div>
+      <div style="font-size:12px;color:var(--green)">정답: <span style="font-family:var(--mono)">${e.modelEnglish}</span></div>
+    </div>`).join('')+(drillWrongBank.length>8?`<div style="font-size:11px;color:var(--text3);padding-top:8px">+ ${drillWrongBank.length-8}개 더</div>`:'');
+
+  const today=new Date().toISOString().slice(0,10);
+  const sessionWrongs=drillWrongBank.filter(e=>e.date===today);
+  if(sessionWrongs.length>0){
+    preview.style.display='block';
+    previewList.innerHTML=sessionWrongs.slice(0,3).map(e=>`
+      <div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text2)">${e.korean}</span>
+        <span style="color:var(--text3);margin:0 6px">→</span>
+        <span style="color:var(--green);font-family:var(--mono)">${e.modelEnglish.split('/')[0].trim()}</span>
+      </div>`).join('');
+  }
+}
+
+function clearWrongBank(){
+  if(!confirm('누적 오답을 초기화할까요?')) return;
+  drillWrongBank=[];
+  localStorage.removeItem('drill_wrongs');
+  renderWrongBank();
+  toast('오답 초기화됐어요.');
+}
+
+// ── 분석 결과 → 브리핑 & 드릴 자동 반영 ────────────────
+function syncAnalysisToLearning(parsed){
+  const allErrors = [
+    ...(parsed.tutor_corrections||[]),
+    ...(parsed.tutor_missed_errors||[]),
+    ...(parsed.recurring_errors_found||[]),
+    ...(parsed.key_errors||[]),
+  ];
+
+  // 드릴 오답 뱅크에 수업 오류 추가
+  allErrors.forEach(e => {
+    if(!e.original||!e.corrected) return;
+    const entry={
+      date:new Date().toISOString().slice(0,10),
+      korean:e.original,
+      modelEnglish:e.corrected,
+      userAnswer:'',
+      note:e.explanation_ko||'',
+      source:'lesson',
+    };
+    drillWrongBank.unshift(entry);
+  });
+  if(drillWrongBank.length>50) drillWrongBank=drillWrongBank.slice(0,50);
+  localStorage.setItem('drill_wrongs', JSON.stringify(drillWrongBank));
+  renderWrongBank();
+
+  // 브리핑 페이지 최근 수업 카드
+  const card=document.getElementById('recent-lesson-card');
+  const errList=document.getElementById('recent-lesson-errors');
+  const priority=document.getElementById('recent-lesson-priority');
+
+  if(card && allErrors.length>0){
+    card.style.display='block';
+    errList.innerHTML=allErrors.slice(0,4).map(e=>{
+      const typeColor=(e.type==='article'||e.type==='translation')?'var(--red)':'var(--amber)';
+      return`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="color:${typeColor};font-family:var(--mono);font-size:12px;text-decoration:line-through">${e.original}</span>
+          <span style="color:var(--text3)">→</span>
+          <span style="color:var(--green);font-family:var(--mono);font-size:12px">${e.corrected}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${e.explanation_ko||''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  if(priority && parsed.briefing_for_next){
+    priority.textContent='👉 '+parsed.briefing_for_next;
+    priority.style.display='block';
+  }
+
+  // 드릴 큐에 이번 수업 오류 기반 문제 추가
+  allErrors.slice(0,3).forEach(e=>{
+    if(!e.original||!e.corrected) return;
+    const newDrill={korean:e.original, english:e.corrected, note:(e.explanation_ko||'')+' (이번 수업에서 나온 오류)', fromLesson:true};
+    if(!DRILLS.find(d=>d.korean===e.original)) DRILLS.unshift(newDrill);
+  });
+
+  // 표현 사전 업데이트 — new_expressions를 localStorage에 누적 저장
+  if(parsed.new_expressions?.length){
+    try{
+      const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+      parsed.new_expressions.forEach(ex => {
+        if(!saved.find(s=>s.expression===ex.expression)) saved.unshift({...ex, date: new Date().toISOString().slice(0,10)});
+      });
+      localStorage.setItem('eng_expressions', JSON.stringify(saved.slice(0,100)));
+    }catch(e){}
+  }
+  renderExpressions();
+}
+
+// ── 표현 사전 렌더링 ──────────────────────────────────
+function renderExpressions(){
+  const container = document.getElementById('expressions-from-lessons');
+  if(!container) return;
+  try{
+    const saved = JSON.parse(localStorage.getItem('eng_expressions')||'[]');
+    if(!saved.length){ container.style.display='none'; return; }
+    container.style.display='block';
+    container.innerHTML = `
+      <div class="expr-section-title">📚 수업에서 추가된 표현 (${saved.length}개)</div>
+      ${saved.map(ex=>`
+        <div class="expr-item">
+          <div class="expr-english" style="color:var(--accent)">${ex.expression}</div>
+          <div class="expr-arrow">→</div>
+          <div class="expr-english">${ex.meaning_ko||''}</div>
+          <div class="expr-note">${ex.example ? '"'+ex.example+'"' : ''} ${ex.date?'· '+ex.date:''}</div>
+        </div>`).join('')}
+    `;
+  }catch(e){}
+}
+
+// ── 저장 / 내보내기 ───────────────────────────────────
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({sessions, diaryEntries}));
+  // 총 수업 수 업데이트
+  const totalCount = BASE_SESSIONS + sessions.length;
+  document.getElementById('stat-total').textContent = totalCount;
+  document.getElementById('total-sessions').textContent = totalCount;
+}
+
+function saveLatestLesson(parsed){
+  // 최근 수업 분석 결과를 별도 키로 저장 — 재접속 시 모든 메뉴 복원에 사용
+  localStorage.setItem('eng_latest_lesson', JSON.stringify({
+    ...parsed,
+    savedAt: new Date().toISOString()
+  }));
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({sessions,diaryEntries},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='english_tracker_data.json'; a.click();
+}
+
+function clearData(){
+  if(!confirm('모든 데이터를 초기화할까요?')) return;
+  localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(DAILY_KEY); localStorage.removeItem('eng_latest_lesson'); localStorage.removeItem('eng_expressions');
+  sessions=[]; diaryEntries=[];
+  renderDiaryHistory(); updateStreak();
+  // 대시보드 초기 상태로 복원
+  document.getElementById('stat-total').textContent = BASE_SESSIONS;
+  document.getElementById('total-sessions').textContent = BASE_SESSIONS;
+  document.getElementById('dashboard-latest-lesson').style.display='none';
+  document.getElementById('recent-lesson-card').style.display='none';
+  toast('초기화됐어요.');
+}
+
+function toast(msg){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ── 앱 시작 시 최근 수업 복원 ────────────────────────
+function restoreRecentLesson(){
+  // eng_latest_lesson 키에서 최근 분석 결과 복원 (기간 제한 없음)
+  try {
+    const raw = localStorage.getItem('eng_latest_lesson');
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(!parsed) return;
+    syncAnalysisToLearning(parsed);
+    updateDashboard(parsed, true); // isRestore=true → 수업 기록 중복 추가 안 함
+  } catch(e) {
+    console.warn('[Tracker] restoreRecentLesson failed:', e);
+  }
+}
+
+// ── 확장에서 넘어온 수업 데이터 처리 ─────────────────
+(function handleExtensionPayload(){
+  const params=new URLSearchParams(window.location.search);
+  const raw=params.get('lesson');
+  if(!raw) return;
+  try{
+    const data=JSON.parse(decodeURIComponent(raw));
+    if(data.source!=='extension') return;
+    window.history.replaceState({},'',(window.location.pathname));
+    setTimeout(()=>{
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
+      document.getElementById('page-upload').classList.add('active');
+      toast('📝 확장에서 데이터가 왔어요. PDF를 올려주세요.');
+    },300);
+  }catch(e){console.error('[Tracker] Failed to parse extension payload:',e);}
+})();
+
+init();
+
+// ── PWA Service Worker 등록 ───────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/english/sw.js')
+      .then(reg => console.log('[PWA] SW registered:', reg.scope))
+      .catch(err => console.log('[PWA] SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
